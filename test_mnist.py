@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
-
+import time
 
 class Net(nn.Module):
     def __init__(self):
@@ -44,12 +44,13 @@ def train(args, model, device, train_loader, optimizer, epoch):
         loss.backward()
         optimizer.step()
         if batch_idx % args.log_interval == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), loss.item()))
+            # print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+            #     epoch, batch_idx * len(data), len(train_loader.dataset),
+            #     100. * batch_idx / len(train_loader), loss.item()))
             if args.dry_run:
                 break
-
+    print('Train Epoch: {} \tLoss: {:.6f}'.format(
+        epoch, loss.item()))
 
 def test(model, device, test_loader):
     model.eval()
@@ -96,7 +97,7 @@ def main():
     args = parser.parse_args()
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     print(f'Use cuda: {use_cuda}')
-
+    start_time = time.perf_counter()
     torch.manual_seed(args.seed)
 
     device = torch.device("cuda" if use_cuda else "cpu")
@@ -126,13 +127,17 @@ def main():
 
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
     for epoch in range(1, args.epochs + 1):
+        epoch_start = time.perf_counter()
         train(args, model, device, train_loader, optimizer, epoch)
         test(model, device, test_loader)
         scheduler.step()
+        epoch_time = time.perf_counter() - epoch_start
+        print(f'time for this epoch is: {epoch_time} s')
 
     if args.save_model:
         torch.save(model.state_dict(), "mnist_cnn.pt")
-
+    total_time = time.perf_counter() - start_time
+    print(f'total time is: {total_time} s')
 
 if __name__ == '__main__':
     main()
