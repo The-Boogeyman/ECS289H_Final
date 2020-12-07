@@ -4,24 +4,100 @@
       <v-col cols="2">
         <v-navigation-drawer permanent width="100%">
           <v-card flat>
-            <v-list dense>
-              <v-subheader>Model1</v-subheader>
-              <v-list-item-group>
+            <v-row>
+              <v-col width="50%">
+                <v-list dense>
+                  <v-subheader>Model1</v-subheader>
+                  <v-list-item-group>
+                    <v-list-item>
+                      <v-text-field
+                        v-model="nLayers1"
+                        label="# of layers"
+                        type="number"
+                      ></v-text-field>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-text-field
+                        v-model="features1"
+                        label="features"
+                      ></v-text-field>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-text-field
+                        v-model="dropRate1"
+                        label="drop out rate"
+                        type="number"
+                      ></v-text-field>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-text-field
+                        v-model="lr1"
+                        label="learning rate"
+                        type="number"
+                      ></v-text-field>
+                    </v-list-item>
+                  </v-list-item-group>
+                </v-list>
+              </v-col>
+              <v-col width="50%">
+                <v-list dense>
+                  <v-subheader>Model2</v-subheader>
+                  <v-list-item-group>
+                    <v-list-item>
+                      <v-text-field
+                        v-model="nLayers2"
+                        label="# of layers"
+                        type="number"
+                      ></v-text-field>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-text-field
+                        v-model="features2"
+                        label="features"
+                      ></v-text-field>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-text-field
+                        v-model="dropRate2"
+                        label="drop out rate"
+                        type="number"
+                      ></v-text-field>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-text-field
+                        v-model="lr2"
+                        label="learning rate"
+                        type="number"
+                      ></v-text-field>
+                    </v-list-item>
+                  </v-list-item-group>
+                </v-list>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
                 <v-list-item>
-                  <v-text-field
-                    v-model="nLayers1"
-                    label="# of layers"
-                    type="number"
-                  ></v-text-field>
+                  <v-btn
+                    text
+                    @click="
+                      start(
+                        nLayers1,
+                        features1,
+                        dropRate1,
+                        lr1,
+                        nLayers2,
+                        features2,
+                        dropRate2,
+                        lr2
+                      )
+                    "
+                    >RUN</v-btn
+                  >
+                  <v-spacer></v-spacer>
+                  <v-btn text @click="reset">RESET</v-btn>
                 </v-list-item>
-                <v-list-item>
-                    <v-text-field
-                      label="out size of each layer"
-                      type="number"
-                    ></v-text-field>
-                  </v-list-item>
-              </v-list-item-group>
-            </v-list>
+              </v-col>
+            </v-row>
           </v-card>
         </v-navigation-drawer>
       </v-col>
@@ -33,6 +109,54 @@
 export default {
   data: () => ({
     nLayers1: 1,
+    features1: [32],
+    dropRate1: -1,
+    lr1: 0.001,
+    nLayers2: 2,
+    features2: [32, 64],
+    dropRate2: 0.5,
+    lr2: 0.001,
   }),
+
+  methods: {
+    start: function(res1_1, res1_2, res1_3, res1_4, res2_1, res2_2, res2_3, res2_4) {
+      console.log("WebSocket connection state: " + this.$socket.readyState);
+      this.$socket.send(
+        "start***" +
+          res1_1 +
+          "***" +
+          res1_2 +
+          "***" +
+          res1_3 +
+          "***" +
+          res1_4 +
+          "***" +
+          res2_1 +
+          "***" +
+          res2_2 +
+          "***" +
+          res2_3 +
+          "***" +
+          res2_4
+      );
+    },
+    reset: function() {
+      this.nLayers1 = 1;
+      this.features1 = [32];
+      this.dropRate1 = -1;
+      this.nLayers2 = 2;
+      this.features2 = [32, 64];
+      this.dropRate2 = 0.5;
+      this.lr1 = 0.001;
+      this.lr2 = 0.001;
+    },
+  },
+
+  mounted() {
+    this.$options.sockets.onmessage = (res) => {
+      res = res.data;
+      console.log(res);
+    };
+  },
 };
 </script>
