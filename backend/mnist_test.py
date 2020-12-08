@@ -1,11 +1,11 @@
 import os
 import time
+import gzip
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
 
@@ -42,44 +42,101 @@ class Model(nn.Module):
         if drop_out_rate > 0.:
             self.layers.extend([
                 nn.Dropout(drop_out_rate),
-                nn.Linear(
-                    int(output_sizes[-1] * output_sizes[-1] * 3 * (1-drop_out_rate)), 10),
-                nn.Softmax()
+                # nn.Linear(int(((28 - 2 * n_layers) / 2 )**2 * output_sizes[-1] * (1-drop_out_rate)), 10),
+                nn.Linear(int(((28 - 2 * n_layers) / 2 )**2 * output_sizes[-1]), 10),
+                nn.Softmax(dim=1)
             ])
         else:
             self.layers.extend([
-                nn.Linear(int(output_sizes[-1] * output_sizes[-1] * 3), 10),
-                nn.Softmax()
+                nn.Linear(int(((28 - 2 * n_layers) / 2 )**2 * output_sizes[-1]), 10),
+                nn.Softmax(dim=1)
             ])
         # print(self.layers)
         self.layers = nn.ModuleList(self.layers)
+        # self.layer1 = nn.Conv2d(1, 32, 3, 1)
+        # self.layer2 = nn.ELU()
+        # self.layer3 = nn.MaxPool2d(2, 2)
+        # self.layer4 = BatchFlatten()
+        # self.layer5 = nn.Linear(32 * 32 * 3, 10)
+        # self.layer6 = nn.Softmax()
 
     def forward(self, x):
-        x = self.layers(x)
+        for layers in self.layers:
+            x = layers(x)
+            # print(x.size())
+        # x = self.layers[1](x)
+        # print('1: ', x.size())
+        # x = self.layers[2](x)
+        # print('2: ', x.size())
+        # x = self.layers[3](x)
+        # print('3: ', x.size())
+        # x = self.layers[4](x)
+        # print('4: ', x.size())
+        # x = self.layers[5](x)
+        # print('5: ', x.size())
+
+        # x = self.layer1(x)
+        # print('1: ', x.size())
+        # x = self.layer2(x)
+        # print('2: ', x.size())
+        # x = self.layer3(x)
+        # print('3: ', x.size())
+        # x = self.layer4(x)
+        # print('4: ', x.size())
+        # x = self.layer5(x)
+        # print('5: ', x.size())
+        # x = self.layer6(x)
+        # print('6: ', x.size())
         return x
 
 
-def mnist_main(n_layers_1, output_sizes_1, drop_out_rate_1, init_lr_1, n_layers_2, output_sizes_2, drop_out_rate_2, init_lr_2, epochs, train_batch_size, lr_step_gamma):
-    assert n_layers_1 == len(
-        output_sizes_1), f'n_layers_1 ({n_layers_1}) is not equal to len(output_sizes_1) ({len(output_sizes_1)})'
-    assert n_layers_2 == len(
-        output_sizes_2), f'n_layers_2 ({n_layers_2}) is not equal to len(output_sizes_2) ({len(output_sizes_2)})'
+def train(model, device, train_loader, optimizer, train_loss_list, epoch, flag):
+    train_loss = 0
+    model.train()
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)
+        optimizer.zero_grad()
+        output = model(data)
+        loss = F.nll_loss(output, target)
+        loss.backward()
+        optimizer.step()
+        train_loss += loss.item()
+    train_loss /= len(train_loader.dataset)
+    train_loss_list.append(train_loss)
+    print('{}: Epoch {}, Train: Average loss: {:.4f}'.format(
+        flag, epoch, train_loss))
+
+
+def test(model, device, test_loader, test_loss_list, test_acc_list, epoch, flag):
+    model.eval()
+    test_loss = 0
+    correct = 0
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            # sum up batch loss
+            test_loss += F.nll_loss(output, target, reduction='sum').item()
+            # get the index of the max log-probability
+            pred = output.argmax(dim=1, keepdim=True)
+            correct += pred.eq(target.view_as(pred)).sum().item()
+
+    test_loss /= len(test_loader.dataset)
+    test_accuracy = 100. * correct / len(test_loader.dataset)
+    test_loss_list.append(test_loss)
+    test_acc_list.append(test_accuracy)
+    print('{}: Epoch: {}, Test: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
+        flag, epoch, test_loss, correct, len(test_loader.dataset), test_accuracy))
+
+
+def mnist_main(n_layers, output_sizes, drop_out_rate, init_lr, train_set, test_set, outputdir, flag):
+    epochs = 10
+    train_batch_size = 64
+    lr_step_gamma = 0.7
+    assert n_layers == len(
+        output_sizes), f'n_layers ({n_layers}) is not equal to len(output_sizes) ({len(output_sizes)})'
     use_cuda = torch.cuda.is_available()
     device = torch.device('cuda' if use_cuda else 'cpu')
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))
-    ])
-    train_set = datasets.MNIST(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data'), train=True, download=True,
-                               transform=transform)
-    test_set = datasets.MNIST(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data'), train=False,
-                              transform=transform)
-    train_set_np = train_set.data.numpy()
-    train_set_target_np = train_set.targets.numpy()
-    test_set_np = test_set.data.numpy()
-    test_set_target_np = test_set.targets.numpy()
-    print(type(train_set_np), train_set_np.shape, train_set_target_np.shape)
-
     train_loader = torch.utils.data.DataLoader(
         dataset=train_set,
         batch_size=train_batch_size,
@@ -94,15 +151,24 @@ def mnist_main(n_layers_1, output_sizes_1, drop_out_rate_1, init_lr_1, n_layers_
         drop_last=False,
         pin_memory=True,
     )
-    model1 = Model(n_layers=n_layers_1, output_sizes=output_sizes_1,
-                   drop_out_rate=drop_out_rate_1).to(device)
-    model2 = Model(n_layers=n_layers_2, output_sizes=output_sizes_2,
-                   drop_out_rate=drop_out_rate_2).to(device)
-    optimizer1 = optim.Adadelta(model1.parameters(), lr=init_lr_1)
-    optimizer2 = optim.Adadelta(model2.parameters(), lr=init_lr_2)
-    scheduler1 = StepLR(optimizer1, step_size=1, gamma=lr_step_gamma)
-    scheduler2 = StepLR(optimizer2, step_size=1, gamma=lr_step_gamma)
-    print(model1)
-    print(model2)
-    # train and save two models
-    # for epoch in range(1, epochs + 1):
+    model = Model(n_layers=n_layers, output_sizes=output_sizes,
+                  drop_out_rate=drop_out_rate).to(device)
+    optimizer = optim.Adadelta(model.parameters(), lr=init_lr)
+    scheduler = StepLR(optimizer, step_size=1, gamma=lr_step_gamma)
+    print(flag, model)
+    out_path = os.path.join(outputdir, flag)
+    os.makedirs(out_path, exist_ok=True)
+    # train and save model
+    train_loss_list = []
+    test_loss_list = []
+    test_acc_list = []
+    for epoch in range(1, epochs + 1):
+        train(model, device, train_loader, optimizer, train_loss_list, epoch, flag)
+        test(model, device, test_loader, test_loss_list, test_acc_list, epoch, flag)
+        scheduler.step()
+        model_path = os.path.join(out_path, f'epoch.{epoch}.statedict.pt.gz')
+        np.save(os.path.join(out_path, f'epoch.{epoch}.train_loss.npy'), train_loss_list)
+        np.save(os.path.join(out_path, f'epoch.{epoch}.test_loss.npy'), test_loss_list)
+        np.save(os.path.join(out_path, f'epoch.{epoch}.test_acc.npy'), test_acc_list)
+        with gzip.open(model_path, 'wb') as f:
+            torch.save(model.state_dict(), f)

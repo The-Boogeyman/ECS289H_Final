@@ -2,8 +2,10 @@ import os
 import asyncio
 import websockets
 import base64
+from threading import Thread
 import numpy as np
 from mnist_test import mnist_main
+from utils import *
 
 async def hello(websocket, path):
     await websocket.send('READY')
@@ -28,10 +30,18 @@ async def hello(websocket, path):
                 features2 = list(map(int, features2))
             else:
                 features2 = [int(features2)]
-            print(n_layers1, features1, drop1, type(n_layers1), type(features1), type(drop1))
-            print(n_layers2, features2, drop2, type(n_layers2), type(features2), type(drop2))
+            # print(n_layers1, features1, drop1, type(n_layers1), type(features1), type(drop1))
+            # print(n_layers2, features2, drop2, type(n_layers2), type(features2), type(drop2))
+            outputdir, timestamp = make_outputdir()
+            train_set, test_set = get_data()
             await websocket.send('Message received. Start training now')
-            mnist_main(n_layers_1=n_layers1, output_sizes_1=features1, drop_out_rate_1=drop1, init_lr_1=lr1, n_layers_2=n_layers2, output_sizes_2=features2, drop_out_rate_2=drop2, init_lr_2=lr2, epochs=10, train_batch_size=64, lr_step_gamma=0.7)
+            print(f'Message received. Start training now. Results saved in {timestamp}')
+            t1 = Thread(target=mnist_main, args=(n_layers1, features1, drop1, lr1, train_set, test_set, outputdir, 'model1'), daemon=True)
+            t2 = Thread(target=mnist_main, args=(n_layers2, features2, drop2, lr2, train_set, test_set, outputdir, 'model2'), daemon=True)
+            t1.start()
+            t2.start()
+            # mnist_main(n_layers1, features1, drop1, lr1, train_set, test_set, outputdir, 'model1')
+            # mnist_main(n_layers2, features2, drop2, lr2, train_set, test_set, outputdir, 'model2')
 
 start_server = websockets.serve(hello, "192.168.1.98", 6060)
 
