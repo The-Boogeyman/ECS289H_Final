@@ -77,6 +77,27 @@
             <v-row>
               <v-col>
                 <v-list-item>
+                  <v-text-field
+                    v-model="epochs"
+                    label="# of epochs"
+                    type="number"
+                  ></v-text-field>
+                </v-list-item>
+                <v-list-item>
+                  <v-text-field
+                    v-model="TrainBatchSize"
+                    label="train batch size"
+                    type="number"
+                  ></v-text-field>
+                </v-list-item>
+                <v-list-item>
+                  <v-text-field
+                    v-model="lrStepGamma"
+                    label="learning rate step gamma"
+                    type="number"
+                  ></v-text-field>
+                </v-list-item>
+                <v-list-item>
                   <v-btn
                     text
                     @click="
@@ -88,7 +109,10 @@
                         nLayers2,
                         features2,
                         dropRate2,
-                        lr2
+                        lr2,
+                        epochs,
+                        TrainBatchSize,
+                        lrStepGamma
                       )
                     "
                     >RUN</v-btn
@@ -116,10 +140,25 @@ export default {
     features2: [32, 64],
     dropRate2: 0.5,
     lr2: 0.001,
+    epochs: 10,
+    TrainBatchSize: 64,
+    lrStepGamma: 0.7,
   }),
 
   methods: {
-    start: function(res1_1, res1_2, res1_3, res1_4, res2_1, res2_2, res2_3, res2_4) {
+    start: function(
+      res1_1,
+      res1_2,
+      res1_3,
+      res1_4,
+      res2_1,
+      res2_2,
+      res2_3,
+      res2_4,
+      res3,
+      res4,
+      res5
+    ) {
       console.log("WebSocket connection state: " + this.$socket.readyState);
       this.$socket.send(
         "start***" +
@@ -137,7 +176,13 @@ export default {
           "***" +
           res2_3 +
           "***" +
-          res2_4
+          res2_4 +
+          "***" +
+          res3 +
+          "***" +
+          res4 +
+          "***" +
+          res5
       );
     },
     reset: function() {

@@ -129,13 +129,11 @@ def test(model, device, test_loader, test_loss_list, test_acc_list, epoch, flag)
         flag, epoch, test_loss, correct, len(test_loader.dataset), test_accuracy))
 
 
-def mnist_main(n_layers, output_sizes, drop_out_rate, init_lr, train_set, test_set, outputdir, flag):
-    epochs = 10
-    train_batch_size = 64
-    lr_step_gamma = 0.7
+def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, drop_out_rate, init_lr, train_set, test_set, outputdir, flag):
     assert n_layers == len(
         output_sizes), f'n_layers ({n_layers}) is not equal to len(output_sizes) ({len(output_sizes)})'
     use_cuda = torch.cuda.is_available()
+    print(flag, use_cuda)
     device = torch.device('cuda' if use_cuda else 'cpu')
     train_loader = torch.utils.data.DataLoader(
         dataset=train_set,
@@ -155,10 +153,10 @@ def mnist_main(n_layers, output_sizes, drop_out_rate, init_lr, train_set, test_s
                   drop_out_rate=drop_out_rate).to(device)
     optimizer = optim.Adadelta(model.parameters(), lr=init_lr)
     scheduler = StepLR(optimizer, step_size=1, gamma=lr_step_gamma)
-    print(flag, model)
+    # print(flag, model)
     out_path = os.path.join(outputdir, flag)
     os.makedirs(out_path, exist_ok=True)
-    # train and save model
+    # train and test
     train_loss_list = []
     test_loss_list = []
     test_acc_list = []
@@ -166,9 +164,21 @@ def mnist_main(n_layers, output_sizes, drop_out_rate, init_lr, train_set, test_s
         train(model, device, train_loader, optimizer, train_loss_list, epoch, flag)
         test(model, device, test_loader, test_loss_list, test_acc_list, epoch, flag)
         scheduler.step()
+        # save trained model & training and testing results
         model_path = os.path.join(out_path, f'epoch.{epoch}.statedict.pt.gz')
         np.save(os.path.join(out_path, f'epoch.{epoch}.train_loss.npy'), train_loss_list)
         np.save(os.path.join(out_path, f'epoch.{epoch}.test_loss.npy'), test_loss_list)
         np.save(os.path.join(out_path, f'epoch.{epoch}.test_acc.npy'), test_acc_list)
         with gzip.open(model_path, 'wb') as f:
             torch.save(model.state_dict(), f)
+        # save current version
+        cur_model_path = os.path.join(out_path, 'model.statedict.pt.gz')
+        np.save(os.path.join(out_path, 'train_loss.npy'), train_loss_list)
+        np.save(os.path.join(out_path, 'test_loss.npy'), test_loss_list)
+        np.save(os.path.join(out_path, 'test_acc.npy'), test_acc_list)
+        with gzip.open(cur_model_path, 'wb') as f:
+            torch.save(model.state_dict(), f)
+        # Below indicates how to load a trained model
+        # model_path = os.path.join(out_path, 'model.statedict.pt.gz')
+        # with gzip.open(model_path, 'rb') as f:
+        #     model = torch.load(f, map_location='cpu')
