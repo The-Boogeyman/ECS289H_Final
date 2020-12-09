@@ -51,42 +51,11 @@ class Model(nn.Module):
                 nn.Linear(int(((28 - 2 * n_layers) / 2 )**2 * output_sizes[-1]), 10),
                 nn.Softmax(dim=1)
             ])
-        # print(self.layers)
         self.layers = nn.ModuleList(self.layers)
-        # self.layer1 = nn.Conv2d(1, 32, 3, 1)
-        # self.layer2 = nn.ELU()
-        # self.layer3 = nn.MaxPool2d(2, 2)
-        # self.layer4 = BatchFlatten()
-        # self.layer5 = nn.Linear(32 * 32 * 3, 10)
-        # self.layer6 = nn.Softmax()
 
     def forward(self, x):
         for layers in self.layers:
             x = layers(x)
-            # print(x.size())
-        # x = self.layers[1](x)
-        # print('1: ', x.size())
-        # x = self.layers[2](x)
-        # print('2: ', x.size())
-        # x = self.layers[3](x)
-        # print('3: ', x.size())
-        # x = self.layers[4](x)
-        # print('4: ', x.size())
-        # x = self.layers[5](x)
-        # print('5: ', x.size())
-
-        # x = self.layer1(x)
-        # print('1: ', x.size())
-        # x = self.layer2(x)
-        # print('2: ', x.size())
-        # x = self.layer3(x)
-        # print('3: ', x.size())
-        # x = self.layer4(x)
-        # print('4: ', x.size())
-        # x = self.layer5(x)
-        # print('5: ', x.size())
-        # x = self.layer6(x)
-        # print('6: ', x.size())
         return x
 
 

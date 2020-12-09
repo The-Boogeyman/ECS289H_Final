@@ -125,12 +125,21 @@
           </v-card>
         </v-navigation-drawer>
       </v-col>
+      <v-col cols="4">
+        <linePlots />
+      </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script>
+import linePlots from '@/components/linePlots.vue'
+
 export default {
+  components: {
+    linePlots
+  },
+  
   data: () => ({
     nLayers1: 1,
     features1: [32],
