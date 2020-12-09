@@ -58,7 +58,8 @@ async def hello(websocket, path):
                     model2_test_acc = np.load(os.path.join(outputdir, 'model2', 'test_acc.npy')).tolist()
                     await websocket.send(f'{model1_train_loss}***{model2_train_loss}')
 
-start_server = websockets.serve(hello, "192.168.1.98", 6060)
+#start_server = websockets.serve(hello, "192.168.1.98", 6060)
+start_server = websockets.serve(hello, "192.168.1.3", 6060)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
