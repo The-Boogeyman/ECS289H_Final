@@ -125,19 +125,31 @@
           </v-card>
         </v-navigation-drawer>
       </v-col>
-      <v-col cols="4">
-        <linePlots />
+      <v-col cols="10">
+        <v-row>
+          <v-col cols="auto">
+            <plotMnist />
+          </v-col>
+          <v-col cols="auto">
+            <plotLoss />
+            <plotAcc />
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script>
-import linePlots from '@/components/linePlots.vue'
+import plotLoss from '@/components/plotLoss.vue'
+import plotAcc from '@/components/plotAcc.vue'
+import plotMnist from '@/components/plotMnist.vue'
 
 export default {
   components: {
-    linePlots
+    plotLoss,
+    plotAcc,
+    plotMnist
   },
   
   data: () => ({
