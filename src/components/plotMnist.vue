@@ -4,6 +4,7 @@
 
 <script>
 import echarts from "echarts";
+import mnistInfo from '@/data/mnistInfoTest.js'
 
 export default {
   name: "plotMnist",
@@ -41,7 +42,7 @@ export default {
         }
       },
       legend: {
-        data: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+        data: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
       },
       grid: {
         left: 50,
@@ -51,19 +52,64 @@ export default {
       },
       series: [
         {
+          name: "0",
+          type: "scatter",
+          symbolSize: 3,
+          data: mnistInfo.mnist[0].content[0],
+        },
+        {
           name: "1",
           type: "scatter",
-          data: [],
+          symbolSize: 3,
+          data: mnistInfo.mnist[1].content[0],
         },
         {
           name: "2",
           type: "scatter",
-          data: [],
+          symbolSize: 3,
+          data: mnistInfo.mnist[2].content[0],
         },
         {
           name: "3",
           type: "scatter",
-          data: [],
+          symbolSize: 3,
+          data: mnistInfo.mnist[3].content[0],
+        },
+        {
+          name: "4",
+          type: "scatter",
+          symbolSize: 3,
+          data: mnistInfo.mnist[4].content[0],
+        },
+        {
+          name: "5",
+          type: "scatter",
+          symbolSize: 3,
+          data: mnistInfo.mnist[5].content[0],
+        },
+        {
+          name: "6",
+          type: "scatter",
+          symbolSize: 3,
+          data: mnistInfo.mnist[6].content[0],
+        },
+        {
+          name: "7",
+          type: "scatter",
+          symbolSize: 3,
+          data: mnistInfo.mnist[7].content[0],
+        },
+        {
+          name: "8",
+          type: "scatter",
+          symbolSize: 3,
+          data: mnistInfo.mnist[8].content[0],
+        },
+        {
+          name: "9",
+          type: "scatter",
+          symbolSize: 3,
+          data: mnistInfo.mnist[9].content[0],
         },
       ],
     },
@@ -73,16 +119,9 @@ export default {
       this.chart = echarts.init(document.getElementById(this.id));
       this.chart.setOption(this.option);
     },
-    updateValue(res0, res1, res2) {
-      this.option.series[0].data = res0;
-      this.option.series[1].data = res1;
-      this.option.series[2].data = res2;
-      this.chart.setOption(this.option);
-    },
   },
   mounted () {
     this.init()
-    this.updateValue([[0, 0], [1, 1]], [[2, 3], [4, 6]], [[7, 7], [9, 9], [10, 10]])
   }
 };
 </script>
