@@ -162,7 +162,7 @@ export default {
     dropRate2: 0.5,
     lr2: 0.001,
     epochs: 10,
-    TrainBatchSize: 64,
+    TrainBatchSize: 256,
     lrStepGamma: 0.7,
   }),
 
