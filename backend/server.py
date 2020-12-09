@@ -3,10 +3,11 @@ import gzip
 import asyncio
 import websockets
 import base64
+import time
 from threading import Thread
 import numpy as np
 from mnist_test import mnist_main
-from utils import *
+from utils import make_outputdir, get_data
 
 async def hello(websocket, path):
     await websocket.send('READY')
@@ -47,16 +48,16 @@ async def hello(websocket, path):
             t2.start()
             # mnist_main(n_layers1, features1, drop1, lr1, train_set, test_set, outputdir, 'model1')
             # mnist_main(n_layers2, features2, drop2, lr2, train_set, test_set, outputdir, 'model2')
-            while t1.is_alive() and t2.is_alive():
-                if os.path.exists(os.path.join(outputdir, 'model1', 'train_loss.npy')):
-                    time.sleep(10)
-                    model1_train_loss = np.load(os.path.join(outputdir, 'model1', 'train_loss.npy')).tolist()
-                    model1_test_loss = np.load(os.path.join(outputdir, 'model1', 'test_loss.npy')).tolist()
-                    model1_test_acc = np.load(os.path.join(outputdir, 'model1', 'test_acc.npy')).tolist()
-                    model2_train_loss = np.load(os.path.join(outputdir, 'model2', 'train_loss.npy')).tolist()
-                    model2_test_loss = np.load(os.path.join(outputdir, 'model2', 'test_loss.npy')).tolist()
-                    model2_test_acc = np.load(os.path.join(outputdir, 'model2', 'test_acc.npy')).tolist()
-                    await websocket.send(f'{model1_train_loss}***{model2_train_loss}')
+            # while t1.is_alive() and t2.is_alive():
+            #     if os.path.exists(os.path.join(outputdir, 'model1', 'train_loss.npy')):
+            #         time.sleep(10)
+            #         model1_train_loss = np.load(os.path.join(outputdir, 'model1', 'train_loss.npy')).tolist()
+            #         model1_test_loss = np.load(os.path.join(outputdir, 'model1', 'test_loss.npy')).tolist()
+            #         model1_test_acc = np.load(os.path.join(outputdir, 'model1', 'test_acc.npy')).tolist()
+            #         model2_train_loss = np.load(os.path.join(outputdir, 'model2', 'train_loss.npy')).tolist()
+            #         model2_test_loss = np.load(os.path.join(outputdir, 'model2', 'test_loss.npy')).tolist()
+            #         model2_test_acc = np.load(os.path.join(outputdir, 'model2', 'test_acc.npy')).tolist()
+            #         await websocket.send(f'{model1_train_loss}***{model2_train_loss}')
 
 start_server = websockets.serve(hello, "192.168.1.98", 6060)
 # start_server = websockets.serve(hello, "192.168.1.3", 6060)

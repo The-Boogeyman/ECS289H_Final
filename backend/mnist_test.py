@@ -102,7 +102,7 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
     assert n_layers == len(
         output_sizes), f'n_layers ({n_layers}) is not equal to len(output_sizes) ({len(output_sizes)})'
     use_cuda = torch.cuda.is_available()
-    print(flag, use_cuda)
+    print(flag, use_cuda, 'Start training')
     device = torch.device('cuda' if use_cuda else 'cpu')
     train_loader = torch.utils.data.DataLoader(
         dataset=train_set,
@@ -130,6 +130,7 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
     test_loss_list = []
     test_acc_list = []
     for epoch in range(1, epochs + 1):
+        epoch_start = time.perf_counter()
         train(model, device, train_loader, optimizer, train_loss_list, epoch, flag)
         test(model, device, test_loader, test_loss_list, test_acc_list, epoch, flag)
         scheduler.step()
@@ -147,6 +148,8 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
         np.save(os.path.join(out_path, 'test_acc.npy'), test_acc_list)
         with gzip.open(cur_model_path, 'wb') as f:
             torch.save(model.state_dict(), f)
+        epoch_time = time.perf_counter() - epoch_start
+        print(f'{flag}: Epoch: {epoch}, Time: {epoch_time}s')
         # Below indicates how to load a trained model
         # model_path = os.path.join(out_path, 'model.statedict.pt.gz')
         # with gzip.open(model_path, 'rb') as f:
