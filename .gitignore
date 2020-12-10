@@ -134,4 +134,5 @@ venv.bak/
 # History in Visual Studio Code
 .history
 
-# saved models
+# temp outputs
+/temp

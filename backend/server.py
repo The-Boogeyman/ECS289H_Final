@@ -75,15 +75,18 @@ async def hello(websocket, path):
         elif 'request_img' in rec_m:
             Index = int(rec_m.split('***')[1])
             print('request image: ', Index)
+            temp_dir = os.path.join(os.getcwd(), 'temp')
+            os.makedirs(temp_dir, exist_ok=True)
             test_set_np = test_set.data.numpy()
             test_set_target_np = test_set.targets.numpy()
             sample_data = test_set_np[Index]
+            np.save(os.path.join(temp_dir, 'sample_data_org.npy'), sample_data)
             sample_label = test_set_target_np[Index]
             sample_img = Image.fromarray(sample_data)
-            sample_img.save('sample_img_org.png')
+            sample_img.save(os.path.join(temp_dir, 'sample_img_org.png'))
             with open('sample_img_org.png', 'rb') as f:
                 img_data = base64.b64encode(f.read()).decode('utf-8')
-            sendMsg = "sample_img***" +  img_data
+            sendMsg = "sample_img***" +  img_data + '***' + str(sample_label)
             await websocket.send(sendMsg)
             print('Send the requested original image to the front end')
         elif 'request_activations' in rec_m:
@@ -93,20 +96,22 @@ async def hello(websocket, path):
             selected_epoch = int(rec_m.split('***')[1])
             model1_path = os.path.join(outputdir, 'model1', f'epoch.{selected_epoch}.statedict.pt.gz')
             model2_path = os.path.join(outputdir, 'model1', f'epoch.{selected_epoch}.statedict.pt.gz')
-            if os.path.exists(model1_path) and os.path.exists(model2_path):
+            temp_dir = os.path.join(os.getcwd(), 'temp')
+            if os.path.exists(model1_path) and os.path.exists(model2_path) and os.path.exists(os.path.join(temp_dir, 'sample_data_org.npy')):
                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
                 model1 = Model(n_layers=n_layers1, output_sizes=features1, drop_out_rate=drop1).to(device)
                 model2 = Model(n_layers=n_layers2, output_sizes=features2, drop_out_rate=drop2).to(device)
-                with gzip.open(model1_path, 'rb') as f:
-                    model1.load_state_dict(torch.load(f))
+                with gzip.open(model1_path, 'rb') as f1:
+                    model1.load_state_dict(torch.load(f1))
                     model1.to(device)
-                with gzip.open(model2_path, 'rb') as f:
-                    model2.load_state_dict(torch.load(f))
+                with gzip.open(model2_path, 'rb') as f2:
+                    model2.load_state_dict(torch.load(f2))
                     model2.to(device)
                 transform = transforms.Compose([
                     transforms.ToTensor(),
                     transforms.Normalize((0.1307,), (0.3081,))
                 ])
+                sample_data = np.load(os.path.join(temp_dir, 'sample_data_org.npy'))
                 sample_tensor = transform(sample_data).to(device)
                 sample_tensor = sample_tensor.unsqueeze(0)
                 output1 = model1(sample_tensor)
