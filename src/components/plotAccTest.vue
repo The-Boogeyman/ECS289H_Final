@@ -15,6 +15,7 @@ export default {
       xAxis: {
         name: "Epoch",
         data: [],
+        triggerEvent: true
       },
       yAxis: {
         type: "value",
@@ -28,6 +29,9 @@ export default {
         right: 50,
         top: 50,
         bottom: 50
+      },
+      tooltip: {
+        trigger: 'axis'
       },
       series: [
         {
@@ -47,6 +51,13 @@ export default {
     init() {
       this.chart = echarts.init(document.getElementById(this.id));
       this.chart.setOption(this.option);
+      this.chart.on("click", (params) => {
+        if (params.componentType === "xAxis") {
+          this.$socket.send("request_activations***" + params.value)
+        } else {
+          this.$socket.send("request_activations***" + params.name)
+        }
+      });
     },
     updateValue(res1, res2, res3) {
       this.option.xAxis.data = res1;
@@ -56,8 +67,17 @@ export default {
     },
   },
   mounted () {
-    this.init()
-    this.updateValue([1, 2], [50.1, 58.1], [30.8, 61.5])
+    this.$options.sockets.onmessage = (res) => {
+      res = res.data;
+      if (res.indexOf("plotAccTest***") !== -1) {
+        res = res.split("***");
+        var epoch = JSON.parse(res[1]);
+        var model1Acc = JSON.parse(res[2]);
+        var model2Acc = JSON.parse(res[3]);
+        this.init();
+        this.updateValue(epoch, model1Acc, model2Acc)
+      }
+    };
   }
 };
 </script>

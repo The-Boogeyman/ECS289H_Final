@@ -138,6 +138,9 @@
             <plotLossTest />
             <plotAccTest />
           </v-col>
+          <v-col cols="auto" v-if="refresh===true">
+            <v-icon @click="sync">mdi-sync</v-icon>
+          </v-col>
         </v-row>
         <v-row>
           <v-col>
@@ -150,12 +153,12 @@
 </template>
 
 <script>
-import plotLossTrain from '@/components/plotLossTrain.vue'
-import plotAccTrain from '@/components/plotAccTrain.vue'
-import plotLossTest from '@/components/plotLossTest.vue'
-import plotAccTest from '@/components/plotAccTest.vue'
-import plotMnist from '@/components/plotMnist.vue'
-import imgModification from '@/components/imgModification.vue'
+import plotLossTrain from "@/components/plotLossTrain.vue";
+import plotAccTrain from "@/components/plotAccTrain.vue";
+import plotLossTest from "@/components/plotLossTest.vue";
+import plotAccTest from "@/components/plotAccTest.vue";
+import plotMnist from "@/components/plotMnist.vue";
+import imgModification from "@/components/imgModification.vue";
 
 export default {
   components: {
@@ -164,9 +167,9 @@ export default {
     plotLossTest,
     plotAccTest,
     plotMnist,
-    imgModification
+    imgModification,
   },
-  
+
   data: () => ({
     nLayers1: 1,
     features1: [32],
@@ -179,6 +182,7 @@ export default {
     epochs: 10,
     TrainBatchSize: 256,
     lrStepGamma: 0.7,
+    refresh: false,
   }),
 
   methods: {
@@ -231,12 +235,17 @@ export default {
       this.lr1 = 0.001;
       this.lr2 = 0.001;
     },
+    sync: function() {
+      this.$socket.send("refresh")
+    }
   },
 
   mounted() {
     this.$options.sockets.onmessage = (res) => {
       res = res.data;
-      console.log(res);
+      if (res.indexOf("start_training***") !== -1) {
+        this.refresh = true;
+      }
     };
   },
 };

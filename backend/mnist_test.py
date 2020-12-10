@@ -45,12 +45,12 @@ class Model(nn.Module):
                 nn.Dropout(drop_out_rate),
                 # nn.Linear(int(((28 - 2 * n_layers) / 2 )**2 * output_sizes[-1] * (1-drop_out_rate)), 10),
                 nn.Linear(int(((28 - 2 * n_layers) / 2 )**2 * output_sizes[-1]), 10),
-                nn.Softmax(dim=1)
+                # nn.Softmax(dim=1)
             ])
         else:
             self.layers.extend([
                 nn.Linear(int(((28 - 2 * n_layers) / 2 )**2 * output_sizes[-1]), 10),
-                nn.Softmax(dim=1)
+                # nn.Softmax(dim=1)
             ])
         self.layers = nn.ModuleList(self.layers)
 
@@ -62,12 +62,14 @@ class Model(nn.Module):
 
 def train(model, device, train_loader, optimizer, train_loss_list, train_acc_list, epoch, flag):
     train_loss = 0
+    correct = 0
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
-        loss = F.nll_loss(output, target)
+        loss_function = nn.CrossEntropyLoss()
+        loss = loss_function(output, target)
         loss.backward()
         optimizer.step()
         train_loss += loss.item()
@@ -91,7 +93,8 @@ def test(model, device, test_loader, test_loss_list, test_acc_list, epoch, flag)
             data, target = data.to(device), target.to(device)
             output = model(data)
             # sum up batch loss
-            test_loss += F.nll_loss(output, target, reduction='sum').item()
+            loss_function = nn.CrossEntropyLoss()
+            test_loss += loss_function(output, target).item()
             # get the index of the max log-probability
             pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
@@ -150,14 +153,15 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
 
         with gzip.open(model_path, 'wb') as f:
             torch.save(model.state_dict(), f)
-        # save current version
-        cur_model_path = os.path.join(out_path, 'model.statedict.pt.gz')
-        np.save(os.path.join(out_path, 'train_loss.npy'), train_loss_list)
-        np.save(os.path.join(out_path, 'train_acc.npy'), train_acc_list)
-        np.save(os.path.join(out_path, 'test_loss.npy'), test_loss_list)
-        np.save(os.path.join(out_path, 'test_acc.npy'), test_acc_list)
-        with gzip.open(cur_model_path, 'wb') as f:
-            torch.save(model.state_dict(), f)
+        if epoch >= 2:
+            # save current version
+            cur_model_path = os.path.join(out_path, 'model.statedict.pt.gz')
+            np.save(os.path.join(out_path, 'train_loss.npy'), train_loss_list)
+            np.save(os.path.join(out_path, 'train_acc.npy'), train_acc_list)
+            np.save(os.path.join(out_path, 'test_loss.npy'), test_loss_list)
+            np.save(os.path.join(out_path, 'test_acc.npy'), test_acc_list)
+            with gzip.open(cur_model_path, 'wb') as f:
+                torch.save(model.state_dict(), f)
         epoch_time = time.perf_counter() - epoch_start
         print(f'{flag}: Epoch: {epoch}, Time: {epoch_time}s')
 

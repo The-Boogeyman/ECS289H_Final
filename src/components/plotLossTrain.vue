@@ -15,6 +15,7 @@ export default {
       xAxis: {
         name: "Epoch",
         data: [],
+        triggerEvent: true
       },
       yAxis: {
         type: "value",
@@ -27,7 +28,10 @@ export default {
         left: 50,
         right: 50,
         top: 50,
-        bottom: 50
+        bottom: 50,
+      },
+      tooltip: {
+        trigger: 'axis'
       },
       series: [
         {
@@ -47,6 +51,13 @@ export default {
     init() {
       this.chart = echarts.init(document.getElementById(this.id));
       this.chart.setOption(this.option);
+      this.chart.on("click", (params) => {
+        if (params.componentType === "xAxis") {
+          this.$socket.send("request_activations***" + params.value)
+        } else {
+          this.$socket.send("request_activations***" + params.name)
+        }
+      });
     },
     updateValue(res1, res2, res3) {
       this.option.xAxis.data = res1;
@@ -55,9 +66,18 @@ export default {
       this.chart.setOption(this.option);
     },
   },
-  mounted () {
-    this.init()
-    this.updateValue([1, 2], [0.4, 0.6], [0.8, 1.5])
-  }
+  mounted() {
+    this.$options.sockets.onmessage = (res) => {
+      res = res.data;
+      if (res.indexOf("plotLossTrain***") !== -1) {
+        res = res.split("***");
+        var epoch = JSON.parse(res[1]);
+        var model1Loss = JSON.parse(res[2]);
+        var model2Loss = JSON.parse(res[3]);
+        this.init();
+        this.updateValue(epoch, model1Loss, model2Loss)
+      }
+    };
+  },
 };
 </script>

@@ -7,7 +7,9 @@ import time
 from threading import Thread
 import numpy as np
 from PIL import Image
-from mnist_test import mnist_main
+import torch
+from torchvision import transforms
+from mnist_test import Model, mnist_main
 from utils import make_outputdir, get_data
 
 
@@ -42,27 +44,34 @@ async def hello(websocket, path):
             # print(n_layers1, features1, drop1, type(n_layers1), type(features1), type(drop1))
             # print(n_layers2, features2, drop2, type(n_layers2), type(features2), type(drop2))
             outputdir, timestamp = make_outputdir()
-            await websocket.send('Message received. Start training now')
+            await websocket.send('start_training***')
             print(f'Message received. Start training now. Results saved in {timestamp}')
-            # TODO: add function to stop training process based on user's selection
+            # TODO
+            #  add function to stop training process based on user's selection
             t1 = Thread(target=mnist_main, args=(epochs, train_batch_size, lr_step_gamma, n_layers1, features1, drop1, lr1, train_set, test_set, outputdir, 'model1'), daemon=True)
             t2 = Thread(target=mnist_main, args=(epochs, train_batch_size, lr_step_gamma, n_layers2, features2, drop2, lr2, train_set, test_set, outputdir, 'model2'), daemon=True)
             t1.start()
             t2.start()
-            while t1.is_alive() and t2.is_alive():
-                if os.path.exists(os.path.join(outputdir, 'model1', 'train_loss.npy')) and os.path.exists(os.path.join(outputdir, 'model2', 'train_loss.npy')):
-                    model1_train_loss = np.load(os.path.join(outputdir, 'model1', 'train_loss.npy')).tolist()
-                    model1_train_acc = np.load(os.path.join(outputdir, 'model1', 'train_acc.npy')).tolist()
-                    model1_test_loss = np.load(os.path.join(outputdir, 'model1', 'test_loss.npy')).tolist()
-                    model1_test_acc = np.load(os.path.join(outputdir, 'model1', 'test_acc.npy')).tolist()
-                    model2_train_loss = np.load(os.path.join(outputdir, 'model2', 'train_loss.npy')).tolist()
-                    model2_train_acc = np.load(os.path.join(outputdir, 'model2', 'train_acc.npy')).tolist()
-                    model2_test_loss = np.load(os.path.join(outputdir, 'model2', 'test_loss.npy')).tolist()
-                    model2_test_acc = np.load(os.path.join(outputdir, 'model2', 'test_acc.npy')).tolist()
-                    length = min([len(model1_test_acc), len(model2_test_acc)])
-                    sendMsg = f"plotInfo***{model1_train_loss[0:length]}***{model1_train_acc[0:length]}"
-                    await websocket.send(f'{model1_train_loss}***{model2_train_loss}')
-                    time.sleep(10)
+        elif 'refresh' in rec_m:
+            if os.path.exists(os.path.join(outputdir, 'model1', 'train_loss.npy')) and os.path.exists(os.path.join(outputdir, 'model2', 'train_loss.npy')):
+                model1_train_loss = np.load(os.path.join(outputdir, 'model1', 'train_loss.npy')).tolist()
+                model1_train_acc = np.load(os.path.join(outputdir, 'model1', 'train_acc.npy')).tolist()
+                model1_test_loss = np.load(os.path.join(outputdir, 'model1', 'test_loss.npy')).tolist()
+                model1_test_acc = np.load(os.path.join(outputdir, 'model1', 'test_acc.npy')).tolist()
+                model2_train_loss = np.load(os.path.join(outputdir, 'model2', 'train_loss.npy')).tolist()
+                model2_train_acc = np.load(os.path.join(outputdir, 'model2', 'train_acc.npy')).tolist()
+                model2_test_loss = np.load(os.path.join(outputdir, 'model2', 'test_loss.npy')).tolist()
+                model2_test_acc = np.load(os.path.join(outputdir, 'model2', 'test_acc.npy')).tolist()
+                length = min([len(model1_test_acc), len(model2_test_acc)])
+                epoch_list = list(range(1, length + 1))
+                sendMsg = f"plotLossTrain***{epoch_list}***{model1_train_loss[0:length]}***{model2_train_loss[0:length]}"
+                await websocket.send(sendMsg)
+                sendMsg = f"plotAccTrain***{epoch_list}***{model1_train_acc[0:length]}***{model2_train_acc[0:length]}"
+                await websocket.send(sendMsg)
+                sendMsg = f"plotLossTest***{epoch_list}***{model1_test_loss[0:length]}***{model2_test_loss[0:length]}"
+                await websocket.send(sendMsg)
+                sendMsg = f"plotAccTest***{epoch_list}***{model1_test_acc[0:length]}***{model2_test_acc[0:length]}"
+                await websocket.send(sendMsg)
         elif 'request_img' in rec_m:
             Index = int(rec_m.split('***')[1])
             print('request image: ', Index)
@@ -77,6 +86,51 @@ async def hello(websocket, path):
             sendMsg = "sample_img***" +  img_data
             await websocket.send(sendMsg)
             print('Send the requested original image to the front end')
+        elif 'request_activations' in rec_m:
+            # TODO
+            # There's some issue with this part
+            # transform and input to model
+            selected_epoch = int(rec_m.split('***')[1])
+            model1_path = os.path.join(outputdir, 'model1', f'epoch.{selected_epoch}.statedict.pt.gz')
+            model2_path = os.path.join(outputdir, 'model1', f'epoch.{selected_epoch}.statedict.pt.gz')
+            if os.path.exists(model1_path) and os.path.exists(model2_path):
+                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+                model1 = Model(n_layers=n_layers1, output_sizes=features1, drop_out_rate=drop1).to(device)
+                model2 = Model(n_layers=n_layers2, output_sizes=features2, drop_out_rate=drop2).to(device)
+                with gzip.open(model1_path, 'rb') as f:
+                    model1.load_state_dict(torch.load(f))
+                    model1.to(device)
+                with gzip.open(model2_path, 'rb') as f:
+                    model2.load_state_dict(torch.load(f))
+                    model2.to(device)
+                transform = transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.Normalize((0.1307,), (0.3081,))
+                ])
+                sample_tensor = transform(sample_data).to(device)
+                sample_tensor = sample_tensor.unsqueeze(0)
+                output1 = model1(sample_tensor)
+                output2 = model2(sample_tensor)
+
+                activations1 = []
+                def hook1(self, input, output):
+                    # print('Inside ' + self.__class__.__name__ + ' forward')
+                    activations1.append(output.detach().squeeze().cpu().numpy())
+                for la in model1.layers:
+                    la.register_forward_hook(hook1)
+                for a in activations1:
+                    print('model1: ', a.shape, type(a))
+
+                activations2 = []
+                def hook2(self, input, output):
+                    # print('Inside ' + self.__class__.__name__ + ' forward')
+                    activations2.append(output.detach().squeeze().cpu().numpy())
+                for la in model2.layers:
+                    la.register_forward_hook(hook2)
+                for a in activations2:
+                    print('model2: ', a.shape, type(a))
+
+
 start_server = websockets.serve(hello, "192.168.1.98", 6060)
 # start_server = websockets.serve(hello, "192.168.1.3", 6060)
 
