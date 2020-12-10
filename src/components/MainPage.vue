@@ -135,6 +135,11 @@
             <plotAcc />
           </v-col>
         </v-row>
+        <v-row>
+          <v-col>
+            <imgModification />
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
   </v-container>
@@ -144,12 +149,14 @@
 import plotLoss from '@/components/plotLoss.vue'
 import plotAcc from '@/components/plotAcc.vue'
 import plotMnist from '@/components/plotMnist.vue'
+import imgModification from '@/components/imgModification.vue'
 
 export default {
   components: {
     plotLoss,
     plotAcc,
-    plotMnist
+    plotMnist,
+    imgModification
   },
   
   data: () => ({

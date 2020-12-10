@@ -4,7 +4,7 @@
 
 <script>
 import echarts from "echarts";
-import mnistInfo from '@/data/mnistInfoTest.js'
+import mnistInfo from "@/data/mnistInfoTest.js";
 
 export default {
   name: "plotMnist",
@@ -14,32 +14,32 @@ export default {
     chart: null,
     option: {
       xAxis: {
-        type: 'value',
+        type: "value",
         scale: true,
         show: false,
         splitLine: {
-          show: false
+          show: false,
         },
         axisLine: {
-          show: false
+          show: false,
         },
         axisTick: {
-          show: false
-        }
+          show: false,
+        },
       },
       yAxis: {
-        type: 'value',
+        type: "value",
         scale: true,
         show: false,
         splitLine: {
-          show: false
+          show: false,
         },
         axisLine: {
-          show: false
+          show: false,
         },
         axisTick: {
-          show: false
-        }
+          show: false,
+        },
       },
       legend: {
         data: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
@@ -48,18 +48,18 @@ export default {
         left: 50,
         right: 50,
         top: 50,
-        bottom: 50
+        bottom: 50,
       },
       tooltip: {
-        trigger: 'item',
-        triggerOn: 'mousemove',
+        trigger: "item",
+        triggerOn: "mousemove",
         confine: true,
         textStyle: {
-          fontSize: 12
+          fontSize: 12,
         },
-        formatter: function (param) {
-          return 'Label: ' + param.data[2] + '<br />Index:' + param.data[3]
-        }
+        formatter: function(param) {
+          return "Label: " + param.data[2] + "<br />Index:" + param.data[3];
+        },
       },
       series: [
         {
@@ -129,10 +129,14 @@ export default {
     init() {
       this.chart = echarts.init(document.getElementById(this.id));
       this.chart.setOption(this.option);
+      this.chart.on("click", (params) => {
+        console.log(params.value);
+        this.$socket.send("request_img***" + params.value[3])
+      });
     },
   },
-  mounted () {
-    this.init()
-  }
+  mounted() {
+    this.init();
+  },
 };
 </script>

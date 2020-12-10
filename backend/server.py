@@ -6,8 +6,12 @@ import base64
 import time
 from threading import Thread
 import numpy as np
+from PIL import Image
 from mnist_test import mnist_main
 from utils import make_outputdir, get_data
+
+
+train_set, test_set = get_data()
 
 async def hello(websocket, path):
     await websocket.send('READY')
@@ -38,7 +42,6 @@ async def hello(websocket, path):
             # print(n_layers1, features1, drop1, type(n_layers1), type(features1), type(drop1))
             # print(n_layers2, features2, drop2, type(n_layers2), type(features2), type(drop2))
             outputdir, timestamp = make_outputdir()
-            train_set, test_set = get_data()
             await websocket.send('Message received. Start training now')
             print(f'Message received. Start training now. Results saved in {timestamp}')
             # TODO: add function to stop training process based on user's selection
@@ -58,7 +61,20 @@ async def hello(websocket, path):
             #         model2_test_loss = np.load(os.path.join(outputdir, 'model2', 'test_loss.npy')).tolist()
             #         model2_test_acc = np.load(os.path.join(outputdir, 'model2', 'test_acc.npy')).tolist()
             #         await websocket.send(f'{model1_train_loss}***{model2_train_loss}')
-
+        elif 'request_img' in rec_m:
+            Index = int(rec_m.split('***')[1])
+            print('request image: ', Index)
+            test_set_np = test_set.data.numpy()
+            test_set_target_np = test_set.targets.numpy()
+            sample_data = test_set_np[Index]
+            sample_label = test_set_target_np[Index]
+            sample_img = Image.fromarray(sample_data)
+            sample_img.save('sample_img_org.png')
+            with open('sample_img_org.png', 'rb') as f:
+                img_data = base64.b64encode(f.read()).decode('utf-8')
+            sendMsg = "sample_img***" +  img_data
+            await websocket.send(sendMsg)
+            print('Send the requested original image to the front end')
 start_server = websockets.serve(hello, "192.168.1.98", 6060)
 # start_server = websockets.serve(hello, "192.168.1.3", 6060)
 
