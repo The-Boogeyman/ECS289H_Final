@@ -135,10 +135,29 @@ async def hello(websocket, path):
                 #     la.register_forward_hook(hook2)
                 # for a in activations2:
                 #     print('model2: ', a.shape, type(a))
-                t3 = Thread(target=get_activations, args=(model1_path, n_layers1, features1, drop1, sample_data, 'model1'), daemon=True)
-                t4 = Thread(target=get_activations, args=(model2_path, n_layers2, features2, drop2, sample_data, 'model2'), daemon=True)
-                t3.start()
-                t4.start()
+
+                # t3 = Thread(target=get_activations, args=(model1_path, n_layers1, features1, drop1, sample_data, 'model1'), daemon=True)
+                # t4 = Thread(target=get_activations, args=(model2_path, n_layers2, features2, drop2, sample_data, 'model2'), daemon=True)
+                # t3.start()
+                # t4.start()
+                model1_actname, prediction1 = get_activations(model1_path, n_layers1, features1, drop1, sample_data, 'model1')
+                model2_actname, prediction2 = get_activations(model2_path, n_layers2, features2, drop2, sample_data, 'model2')
+                sendMsg = f"model1Activations***{len(model1_actname)}***{prediction1}***{selected_epoch}"
+                for i in range(len(model1_actname)):
+                    act_name = model1_actname[i]
+                    with open(os.path.join(temp_dir, f'model1_{act_name}.png'), 'rb') as f:
+                        img_data = base64.b64encode(f.read()).decode('utf-8')
+                    sendMsg += f'***{act_name}***{img_data}'
+                await websocket.send(sendMsg)
+                sendMsg = f"model2Activations***{len(model2_actname)}***{prediction2}***{selected_epoch}"
+                for i in range(len(model2_actname)):
+                    act_name = model2_actname[i]
+                    with open(os.path.join(temp_dir, f'model2_{act_name}.png'), 'rb') as f:
+                        img_data = base64.b64encode(f.read()).decode('utf-8')
+                    sendMsg += f'***{act_name}***{img_data}'
+                await websocket.send(sendMsg)
+                print(f'Send {len(model1_actname)} activations for model1. Prediction: {prediction1}. Epoch: {selected_epoch}')
+                print(f'Send {len(model2_actname)} activations for model2. Prediction: {prediction2}. Epoch: {selected_epoch}')
 
 
 start_server = websockets.serve(hello, "192.168.1.98", 6060)

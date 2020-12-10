@@ -9,6 +9,7 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 from torchvision import transforms
 import matplotlib.pyplot as plt
+import random
 
 
 class BatchFlatten(nn.Module):
@@ -45,12 +46,14 @@ class Model(nn.Module):
             self.layers.extend([
                 nn.Dropout(drop_out_rate),
                 # nn.Linear(int(((28 - 2 * n_layers) / 2 )**2 * output_sizes[-1] * (1-drop_out_rate)), 10),
-                nn.Linear(int(((28 - 2 * n_layers) / 2 )**2 * output_sizes[-1]), 10),
+                nn.Linear(int(((28 - 2 * n_layers) / 2)
+                              ** 2 * output_sizes[-1]), 10),
                 # nn.Softmax(dim=1)
             ])
         else:
             self.layers.extend([
-                nn.Linear(int(((28 - 2 * n_layers) / 2 )**2 * output_sizes[-1]), 10),
+                nn.Linear(int(((28 - 2 * n_layers) / 2)
+                              ** 2 * output_sizes[-1]), 10),
                 # nn.Softmax(dim=1)
             ])
         self.layers = nn.ModuleList(self.layers)
@@ -81,8 +84,8 @@ def train(model, device, train_loader, optimizer, train_loss_list, train_acc_lis
     train_accuracy = 100. * correct / len(train_loader.dataset)
     train_loss_list.append(train_loss)
     train_acc_list.append(train_accuracy)
-    print('{}: Epoch {}, Train: Average loss: {:.4f}'.format(
-        flag, epoch, train_loss))
+    # print('{}: Epoch {}, Train: Average loss: {:.4f}'.format(
+    #     flag, epoch, train_loss))
 
 
 def test(model, device, test_loader, test_loss_list, test_acc_list, epoch, flag):
@@ -104,8 +107,8 @@ def test(model, device, test_loader, test_loss_list, test_acc_list, epoch, flag)
     test_accuracy = 100. * correct / len(test_loader.dataset)
     test_loss_list.append(test_loss)
     test_acc_list.append(test_accuracy)
-    print('{}: Epoch: {}, Test: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
-        flag, epoch, test_loss, correct, len(test_loader.dataset), test_accuracy))
+    # print('{}: Epoch: {}, Test: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
+    #     flag, epoch, test_loss, correct, len(test_loader.dataset), test_accuracy))
 
 
 def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, drop_out_rate, init_lr, train_set, test_set, outputdir, flag):
@@ -132,7 +135,7 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
                   drop_out_rate=drop_out_rate).to(device)
     optimizer = optim.Adadelta(model.parameters(), lr=init_lr)
     scheduler = StepLR(optimizer, step_size=1, gamma=lr_step_gamma)
-    print(flag, model)
+    # print(flag, model)
     out_path = os.path.join(outputdir, flag)
     os.makedirs(out_path, exist_ok=True)
     # train and test
@@ -142,16 +145,22 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
     test_acc_list = []
     for epoch in range(1, epochs + 1):
         epoch_start = time.perf_counter()
-        train(model, device, train_loader, optimizer, train_loss_list, train_acc_list, epoch, flag)
-        test(model, device, test_loader, test_loss_list, test_acc_list, epoch, flag)
+        train(model, device, train_loader, optimizer,
+              train_loss_list, train_acc_list, epoch, flag)
+        test(model, device, test_loader,
+             test_loss_list, test_acc_list, epoch, flag)
         scheduler.step()
         # save trained model & training and testing results
         # model_path = os.path.join(out_path, f'epoch.{epoch}.statedict.pt.gz')
         model_path = os.path.join(out_path, f'epoch.{epoch}.pt.gz')
-        np.save(os.path.join(out_path, f'epoch.{epoch}.train_loss.npy'), train_loss_list)
-        np.save(os.path.join(out_path, f'epoch.{epoch}.test_acc.npy'), train_acc_list)
-        np.save(os.path.join(out_path, f'epoch.{epoch}.test_loss.npy'), test_loss_list)
-        np.save(os.path.join(out_path, f'epoch.{epoch}.test_acc.npy'), test_acc_list)
+        np.save(os.path.join(
+            out_path, f'epoch.{epoch}.train_loss.npy'), train_loss_list)
+        np.save(os.path.join(
+            out_path, f'epoch.{epoch}.test_acc.npy'), train_acc_list)
+        np.save(os.path.join(
+            out_path, f'epoch.{epoch}.test_loss.npy'), test_loss_list)
+        np.save(os.path.join(
+            out_path, f'epoch.{epoch}.test_acc.npy'), test_acc_list)
 
         with gzip.open(model_path, 'wb') as f:
             # torch.save(model.state_dict(), f)
@@ -177,10 +186,11 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
 
 
 def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag):
-    print(f'Start generating activations for {flag}')
+    # print(f'Start generating activations for {flag}')
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # copy_model = Model(n_layers=n_layers, output_sizes=features, drop_out_rate=drop).to(device)
-    copy_model = Model(n_layers=n_layers, output_sizes=features, drop_out_rate=drop)
+    copy_model = Model(n_layers=n_layers,
+                       output_sizes=features, drop_out_rate=drop)
     with gzip.open(copy_model_path, 'rb') as copy_f:
         copy_model = torch.load(copy_f).to('cpu')
         # copy_model.to(device)
@@ -193,18 +203,22 @@ def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag
     sample_tensor = sample_tensor.unsqueeze(0)
 
     activations = []
+    activations_name = []
+
     def hook(self, input, output):
-        print('Inside ' + self.__class__.__name__ + ' forward')
+        # print('Inside ' + self.__class__.__name__ + ' forward')
         # activations.append(output.detach().squeeze().cpu().numpy())
         activations.append(output.detach().squeeze().numpy())
+        activations_name.append(self.__class__.__name__)
+
     for la in copy_model.layers:
         la.register_forward_hook(hook)
 
     sample_output = copy_model(sample_tensor)
-    print(f'{flag}, sample_output: {sample_output}')
-
-    for a in activations:
-        print(flag, a.shape, type(a))
+    # print(f'{flag}, sample_output: {sample_output}')
+    prediction = int(sample_output.argmax(dim=1, keepdim=True))
+    # for a in activations:
+    #     print(flag, a.shape, type(a))
 
     temp_dir = os.path.join(os.getcwd(), 'temp')
 
@@ -213,10 +227,14 @@ def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag
         if fname.startswith(flag):
             os.remove(os.path.join(temp_dir, fname))
 
+    saved_activations_name = []
     # save new files
     for i in range(len(activations)):
         if(activations[i].ndim == 3):
-            im = activations[i][0, :, :]
-            print("Saving " + os.path.join(temp_dir, flag + "_l" + str(i)) + ".png")
-            plt.imsave(os.path.join(temp_dir, flag + "_l" + str(i)) + ".png", im)
-
+            random_select = random.randint(0, activations[i].shape[0] - 1)
+            im = activations[i][random_select, :, :]
+            # print("Saving " + os.path.join(temp_dir, flag + "_l" + str(i)) + ".png")
+            plt.imsave(os.path.join(
+                temp_dir, f'{flag}_{activations_name[i]}.png'), im)
+            saved_activations_name.append(activations_name[i])
+    return saved_activations_name, prediction
