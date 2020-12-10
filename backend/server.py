@@ -96,11 +96,10 @@ async def hello(websocket, path):
             selected_epoch = int(rec_m.split('***')[1])
             print(f'received request to load mode from epoch {selected_epoch}. Start to generate activations')
             model1_path = os.path.join(outputdir, 'model1', f'epoch.{selected_epoch}.pt.gz')
-            model2_path = os.path.join(outputdir, 'model1', f'epoch.{selected_epoch}.pt.gz')
+            model2_path = os.path.join(outputdir, 'model2', f'epoch.{selected_epoch}.pt.gz')
             temp_dir = os.path.join(os.getcwd(), 'temp')
             if os.path.exists(model1_path) and os.path.exists(model2_path) and os.path.exists(os.path.join(temp_dir, 'sample_data_org.npy')):
                 sample_data = np.load(os.path.join(temp_dir, 'sample_data_org.npy'))
-
                 # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
                 # model1 = Model(n_layers=n_layers1, output_sizes=features1, drop_out_rate=drop1).to(device)
                 # model2 = Model(n_layers=n_layers2, output_sizes=features2, drop_out_rate=drop2).to(device)

@@ -178,24 +178,27 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
 
 def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag):
     print(f'Start generating activations for {flag}')
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    copy_model = Model(n_layers=n_layers, output_sizes=features, drop_out_rate=drop).to(device)
+    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # copy_model = Model(n_layers=n_layers, output_sizes=features, drop_out_rate=drop).to(device)
+    copy_model = Model(n_layers=n_layers, output_sizes=features, drop_out_rate=drop)
     with gzip.open(copy_model_path, 'rb') as copy_f:
-        copy_model = torch.load(copy_f)
-        copy_model.to(device)
-        transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,))
-        ])
-        sample_tensor = transform(sample_data).to(device)
-        sample_tensor = sample_tensor.unsqueeze(0)
-        sample_output = copy_model(sample_tensor)
-        print(f'{flag}, sample_output: {sample_output}')
-        activations = []
-        def hook1(self, input, output):
-            # print('Inside ' + self.__class__.__name__ + ' forward')
-            activations.append(output.detach().squeeze().cpu().numpy())
-        for la in copy_model.layers:
-            la.register_forward_hook(hook1)
-        for a in activations:
-            print(flag, a.shape, type(a))
+        copy_model = torch.load(copy_f).to('cpu')
+        # copy_model.to(device)
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,))
+    ])
+    # sample_tensor = transform(sample_data).to(device)
+    sample_tensor = transform(sample_data)
+    sample_tensor = sample_tensor.unsqueeze(0)
+    sample_output = copy_model(sample_tensor)
+    print(f'{flag}, sample_output: {sample_output}')
+    activations = []
+    def hook(self, input, output):
+        print('Inside ' + self.__class__.__name__ + ' forward')
+        # activations.append(output.detach().squeeze().cpu().numpy())
+        activations.append(output.detach().squeeze().numpy())
+    for la in copy_model.layers:
+        la.register_forward_hook(hook)
+    for a in activations:
+        print(flag, a.shape, type(a))
