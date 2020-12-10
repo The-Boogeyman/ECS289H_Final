@@ -50,6 +50,17 @@ export default {
         top: 50,
         bottom: 50
       },
+      tooltip: {
+        trigger: 'item',
+        triggerOn: 'mousemove',
+        confine: true,
+        textStyle: {
+          fontSize: 12
+        },
+        formatter: function (param) {
+          return 'Label: ' + param.data[2] + '<br />Index:' + param.data[3]
+        }
+      },
       series: [
         {
           name: "0",
