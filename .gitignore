@@ -135,4 +135,4 @@ venv.bak/
 .history
 
 # temp outputs
-/temp
+/backend/temp
