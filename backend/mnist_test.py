@@ -191,8 +191,7 @@ def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag
     # sample_tensor = transform(sample_data).to(device)
     sample_tensor = transform(sample_data)
     sample_tensor = sample_tensor.unsqueeze(0)
-    sample_output = copy_model(sample_tensor)
-    print(f'{flag}, sample_output: {sample_output}')
+
     activations = []
     def hook(self, input, output):
         print('Inside ' + self.__class__.__name__ + ' forward')
@@ -200,5 +199,24 @@ def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag
         activations.append(output.detach().squeeze().numpy())
     for la in copy_model.layers:
         la.register_forward_hook(hook)
+
+    sample_output = copy_model(sample_tensor)
+    print(f'{flag}, sample_output: {sample_output}')
+
     for a in activations:
         print(flag, a.shape, type(a))
+
+    temp_dir = os.path.join(os.getcwd(), 'temp')
+
+    # delete old activations for this model
+    for fname in os.listdir(temp_dir):
+        if fname.startswith(flag):
+            os.remove(os.path.join(temp_dir, fname))
+
+    # save new files
+    for i in range(len(activations)):
+        if(activations[i].ndim == 3):
+            im = activations[i][0, :, :]
+            print("Saving " + os.path.join(temp_dir, flag + "_l" + str(i)) + ".png")
+            plt.imsave(os.path.join(temp_dir, flag + "_l" + str(i)) + ".png", im)
+
