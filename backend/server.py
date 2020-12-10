@@ -49,18 +49,20 @@ async def hello(websocket, path):
             t2 = Thread(target=mnist_main, args=(epochs, train_batch_size, lr_step_gamma, n_layers2, features2, drop2, lr2, train_set, test_set, outputdir, 'model2'), daemon=True)
             t1.start()
             t2.start()
-            # mnist_main(n_layers1, features1, drop1, lr1, train_set, test_set, outputdir, 'model1')
-            # mnist_main(n_layers2, features2, drop2, lr2, train_set, test_set, outputdir, 'model2')
-            # while t1.is_alive() and t2.is_alive():
-            #     if os.path.exists(os.path.join(outputdir, 'model1', 'train_loss.npy')):
-            #         time.sleep(10)
-            #         model1_train_loss = np.load(os.path.join(outputdir, 'model1', 'train_loss.npy')).tolist()
-            #         model1_test_loss = np.load(os.path.join(outputdir, 'model1', 'test_loss.npy')).tolist()
-            #         model1_test_acc = np.load(os.path.join(outputdir, 'model1', 'test_acc.npy')).tolist()
-            #         model2_train_loss = np.load(os.path.join(outputdir, 'model2', 'train_loss.npy')).tolist()
-            #         model2_test_loss = np.load(os.path.join(outputdir, 'model2', 'test_loss.npy')).tolist()
-            #         model2_test_acc = np.load(os.path.join(outputdir, 'model2', 'test_acc.npy')).tolist()
-            #         await websocket.send(f'{model1_train_loss}***{model2_train_loss}')
+            while t1.is_alive() and t2.is_alive():
+                if os.path.exists(os.path.join(outputdir, 'model1', 'train_loss.npy')) and os.path.exists(os.path.join(outputdir, 'model2', 'train_loss.npy')):
+                    model1_train_loss = np.load(os.path.join(outputdir, 'model1', 'train_loss.npy')).tolist()
+                    model1_train_acc = np.load(os.path.join(outputdir, 'model1', 'train_acc.npy')).tolist()
+                    model1_test_loss = np.load(os.path.join(outputdir, 'model1', 'test_loss.npy')).tolist()
+                    model1_test_acc = np.load(os.path.join(outputdir, 'model1', 'test_acc.npy')).tolist()
+                    model2_train_loss = np.load(os.path.join(outputdir, 'model2', 'train_loss.npy')).tolist()
+                    model2_train_acc = np.load(os.path.join(outputdir, 'model2', 'train_acc.npy')).tolist()
+                    model2_test_loss = np.load(os.path.join(outputdir, 'model2', 'test_loss.npy')).tolist()
+                    model2_test_acc = np.load(os.path.join(outputdir, 'model2', 'test_acc.npy')).tolist()
+                    length = min([len(model1_test_acc), len(model2_test_acc)])
+                    sendMsg = f"plotInfo***{model1_train_loss[0:length]}***{model1_train_acc[0:length]}"
+                    await websocket.send(f'{model1_train_loss}***{model2_train_loss}')
+                    time.sleep(10)
         elif 'request_img' in rec_m:
             Index = int(rec_m.split('***')[1])
             print('request image: ', Index)

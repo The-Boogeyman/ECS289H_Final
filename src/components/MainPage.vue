@@ -131,8 +131,12 @@
             <plotMnist />
           </v-col>
           <v-col cols="auto">
-            <plotLoss />
-            <plotAcc />
+            <plotLossTrain />
+            <plotAccTrain />
+          </v-col>
+          <v-col cols="auto">
+            <plotLossTest />
+            <plotAccTest />
           </v-col>
         </v-row>
         <v-row>
@@ -146,15 +150,19 @@
 </template>
 
 <script>
-import plotLoss from '@/components/plotLoss.vue'
-import plotAcc from '@/components/plotAcc.vue'
+import plotLossTrain from '@/components/plotLossTrain.vue'
+import plotAccTrain from '@/components/plotAccTrain.vue'
+import plotLossTest from '@/components/plotLossTest.vue'
+import plotAccTest from '@/components/plotAccTest.vue'
 import plotMnist from '@/components/plotMnist.vue'
 import imgModification from '@/components/imgModification.vue'
 
 export default {
   components: {
-    plotLoss,
-    plotAcc,
+    plotLossTrain,
+    plotAccTrain,
+    plotLossTest,
+    plotAccTest,
     plotMnist,
     imgModification
   },

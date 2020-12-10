@@ -1,15 +1,15 @@
 <template>
-  <div id="loss" style="width:300px; height: 200px" class="echarts"></div>
+  <div id="trainLoss" style="width:300px; height: 200px" class="echarts"></div>
 </template>
 
 <script>
 import echarts from "echarts";
 
 export default {
-  name: "plotLoss",
+  name: "plotLossTrain",
 
   data: () => ({
-    id: "loss",
+    id: "trainLoss",
     chart: null,
     option: {
       xAxis: {
@@ -18,7 +18,7 @@ export default {
       },
       yAxis: {
         type: "value",
-        name: "Loss",
+        name: "Train Loss",
       },
       legend: {
         data: ["model1", "model2"],

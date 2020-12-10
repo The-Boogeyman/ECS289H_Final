@@ -60,7 +60,7 @@ class Model(nn.Module):
         return x
 
 
-def train(model, device, train_loader, optimizer, train_loss_list, epoch, flag):
+def train(model, device, train_loader, optimizer, train_loss_list, train_acc_list, epoch, flag):
     train_loss = 0
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
@@ -71,8 +71,13 @@ def train(model, device, train_loader, optimizer, train_loss_list, epoch, flag):
         loss.backward()
         optimizer.step()
         train_loss += loss.item()
+        pred = output.argmax(dim=1, keepdim=True)
+        correct += pred.eq(target.view_as(pred)).sum().item()
+
     train_loss /= len(train_loader.dataset)
+    train_accuracy = 100. * correct / len(train_loader.dataset)
     train_loss_list.append(train_loss)
+    train_acc_list.append(train_accuracy)
     print('{}: Epoch {}, Train: Average loss: {:.4f}'.format(
         flag, epoch, train_loss))
 
@@ -128,23 +133,27 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
     os.makedirs(out_path, exist_ok=True)
     # train and test
     train_loss_list = []
+    train_acc_list = []
     test_loss_list = []
     test_acc_list = []
     for epoch in range(1, epochs + 1):
         epoch_start = time.perf_counter()
-        train(model, device, train_loader, optimizer, train_loss_list, epoch, flag)
+        train(model, device, train_loader, optimizer, train_loss_list, train_acc_list, epoch, flag)
         test(model, device, test_loader, test_loss_list, test_acc_list, epoch, flag)
         scheduler.step()
         # save trained model & training and testing results
         model_path = os.path.join(out_path, f'epoch.{epoch}.statedict.pt.gz')
         np.save(os.path.join(out_path, f'epoch.{epoch}.train_loss.npy'), train_loss_list)
+        np.save(os.path.join(out_path, f'epoch.{epoch}.test_acc.npy'), train_acc_list)
         np.save(os.path.join(out_path, f'epoch.{epoch}.test_loss.npy'), test_loss_list)
         np.save(os.path.join(out_path, f'epoch.{epoch}.test_acc.npy'), test_acc_list)
+
         with gzip.open(model_path, 'wb') as f:
             torch.save(model.state_dict(), f)
         # save current version
         cur_model_path = os.path.join(out_path, 'model.statedict.pt.gz')
         np.save(os.path.join(out_path, 'train_loss.npy'), train_loss_list)
+        np.save(os.path.join(out_path, 'train_acc.npy'), train_acc_list)
         np.save(os.path.join(out_path, 'test_loss.npy'), test_loss_list)
         np.save(os.path.join(out_path, 'test_acc.npy'), test_acc_list)
         with gzip.open(cur_model_path, 'wb') as f:

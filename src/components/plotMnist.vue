@@ -61,6 +61,13 @@ export default {
           return "Label: " + param.data[2] + "<br />Index:" + param.data[3];
         },
       },
+      dataZoom: [
+        {
+          type: 'inside',
+          xAxisIndex: [0],
+          yAxisIndex: [0]
+        }
+      ],
       series: [
         {
           name: "0",

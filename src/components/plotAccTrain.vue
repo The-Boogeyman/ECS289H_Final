@@ -1,15 +1,15 @@
 <template>
-  <div id="acc" style="width:300px; height: 200px" class="echarts"></div>
+  <div id="trainAcc" style="width:300px; height: 200px" class="echarts"></div>
 </template>
 
 <script>
 import echarts from "echarts";
 
 export default {
-  name: "plotAcc",
+  name: "plotAccTrain",
 
   data: () => ({
-    id: "acc",
+    id: "trainAcc",
     chart: null,
     option: {
       xAxis: {
@@ -18,7 +18,7 @@ export default {
       },
       yAxis: {
         type: "value",
-        name: "Accuracy(%)",
+        name: "Train Accuracy(%)",
       },
       legend: {
         data: ["model1", "model2"],
