@@ -152,69 +152,8 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
         epoch_time = time.perf_counter() - epoch_start
         print(f'{flag}: Epoch: {epoch}, Time: {epoch_time}s')
 
-
-        # Below indicates how to load a trained model
-        model_path = os.path.join(out_path, 'model.statedict.pt.gz')
-        with gzip.open(model_path, 'rb') as f:
-            loaded_model = torch.load(f, map_location='cpu')
-
-        print("Hello")
-
-        #print(loaded_model.keys())
-
-        for k in loaded_model.keys():
-            print(k)
-
-        for v in loaded_model.values():
-            print(type(v))
-            print(v.data.numpy().shape)
-
-        print(type(test_set))
-        print(type(test_set[0]))
-        print(type(test_set[0][0]))
-        print(type(test_set[0][0].numpy()))
-        print(test_set[0][0].numpy().shape)
-        #print(type(test_set[0, 0].data.numpy()))
-        im = test_set[0][0].numpy()[0]
-
-        #print(type(im))
-        #print(im.size)
-
-        plt.imsave("test.png", im, cmap='gray')
-
-        copy = Model(n_layers=n_layers, output_sizes=output_sizes, drop_out_rate=drop_out_rate)
-        copy.load_state_dict(loaded_model)
-        print(type(copy))
-        print(type(copy.layers))
-
-        activations = []
-
-        def hook(self, input, output):
-            print('Inside ' + self.__class__.__name__ + ' forward')
-            #print('')
-            #print('input: ', type(input))
-            #print('input[0]: ', type(input[0]))
-            #print('output: ', type(output))
-            #print('')
-            #print('input size:', input[0].size())
-            #print('output size:', output.data.size())
-            #print('output norm:', output.data.norm())
-            activations.append(output.detach().squeeze().numpy())
-
-
-        for la in copy.layers:
-            la.register_forward_hook(hook)
-
-        copy(test_set[0][0].unsqueeze(0))
-
-        for a in activations:
-            print(a.shape)
-
-        print("End")
-        #copy(test_loader[0])
-
-        #print(copy)
-
-
-        #for la in model.layers:
-        #    print(type(la))
+        # # Below indicates how to load a trained model
+        # model_path = os.path.join(out_path, 'model.statedict.pt.gz')
+        # with gzip.open(model_path, 'rb') as f:
+        #     model.load_state_dict(torch.load(f))
+        #     model.to(device)
