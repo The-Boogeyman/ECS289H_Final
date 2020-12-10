@@ -9,7 +9,7 @@ import numpy as np
 from PIL import Image
 import torch
 from torchvision import transforms
-from mnist_test import Model, mnist_main
+from mnist_test import Model, mnist_main, get_activations
 from utils import make_outputdir, get_data
 
 
@@ -84,7 +84,7 @@ async def hello(websocket, path):
             sample_label = test_set_target_np[Index]
             sample_img = Image.fromarray(sample_data)
             sample_img.save(os.path.join(temp_dir, 'sample_img_org.png'))
-            with open('sample_img_org.png', 'rb') as f:
+            with open(os.path.join(temp_dir, 'sample_img_org.png'), 'rb') as f:
                 img_data = base64.b64encode(f.read()).decode('utf-8')
             sendMsg = "sample_img***" +  img_data + '***' + str(sample_label)
             await websocket.send(sendMsg)
@@ -94,46 +94,52 @@ async def hello(websocket, path):
             # There's some issue with this part
             # transform and input to model
             selected_epoch = int(rec_m.split('***')[1])
-            model1_path = os.path.join(outputdir, 'model1', f'epoch.{selected_epoch}.statedict.pt.gz')
-            model2_path = os.path.join(outputdir, 'model1', f'epoch.{selected_epoch}.statedict.pt.gz')
+            print(f'received request to load mode from epoch {selected_epoch}. Start to generate activations')
+            model1_path = os.path.join(outputdir, 'model1', f'epoch.{selected_epoch}.pt.gz')
+            model2_path = os.path.join(outputdir, 'model1', f'epoch.{selected_epoch}.pt.gz')
             temp_dir = os.path.join(os.getcwd(), 'temp')
             if os.path.exists(model1_path) and os.path.exists(model2_path) and os.path.exists(os.path.join(temp_dir, 'sample_data_org.npy')):
-                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-                model1 = Model(n_layers=n_layers1, output_sizes=features1, drop_out_rate=drop1).to(device)
-                model2 = Model(n_layers=n_layers2, output_sizes=features2, drop_out_rate=drop2).to(device)
-                with gzip.open(model1_path, 'rb') as f1:
-                    model1.load_state_dict(torch.load(f1))
-                    model1.to(device)
-                with gzip.open(model2_path, 'rb') as f2:
-                    model2.load_state_dict(torch.load(f2))
-                    model2.to(device)
-                transform = transforms.Compose([
-                    transforms.ToTensor(),
-                    transforms.Normalize((0.1307,), (0.3081,))
-                ])
                 sample_data = np.load(os.path.join(temp_dir, 'sample_data_org.npy'))
-                sample_tensor = transform(sample_data).to(device)
-                sample_tensor = sample_tensor.unsqueeze(0)
-                output1 = model1(sample_tensor)
-                output2 = model2(sample_tensor)
 
-                activations1 = []
-                def hook1(self, input, output):
-                    # print('Inside ' + self.__class__.__name__ + ' forward')
-                    activations1.append(output.detach().squeeze().cpu().numpy())
-                for la in model1.layers:
-                    la.register_forward_hook(hook1)
-                for a in activations1:
-                    print('model1: ', a.shape, type(a))
-
-                activations2 = []
-                def hook2(self, input, output):
-                    # print('Inside ' + self.__class__.__name__ + ' forward')
-                    activations2.append(output.detach().squeeze().cpu().numpy())
-                for la in model2.layers:
-                    la.register_forward_hook(hook2)
-                for a in activations2:
-                    print('model2: ', a.shape, type(a))
+                # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+                # model1 = Model(n_layers=n_layers1, output_sizes=features1, drop_out_rate=drop1).to(device)
+                # model2 = Model(n_layers=n_layers2, output_sizes=features2, drop_out_rate=drop2).to(device)
+                # with gzip.open(model1_path, 'rb') as f1:
+                #     # model1.load_state_dict(torch.load(f1))
+                #     model1 = torch.load(f1)
+                #     model1.to(device)
+                # with gzip.open(model2_path, 'rb') as f2:
+                #     # model2.load_state_dict(torch.load(f2))
+                #     model2 = torch.load(f2)
+                #     model2.to(device)
+                # transform = transforms.Compose([
+                #     transforms.ToTensor(),
+                #     transforms.Normalize((0.1307,), (0.3081,))
+                # ])
+                # sample_tensor = transform(sample_data).to(device)
+                # sample_tensor = sample_tensor.unsqueeze(0)
+                # output1 = model1(sample_tensor)
+                # output2 = model2(sample_tensor)
+                # activations1 = []
+                # def hook1(self, input, output):
+                #     # print('Inside ' + self.__class__.__name__ + ' forward')
+                #     activations1.append(output.detach().squeeze().cpu().numpy())
+                # for la in model1.layers:
+                #     la.register_forward_hook(hook1)
+                # for a in activations1:
+                #     print('model1: ', a.shape, type(a))
+                # activations2 = []
+                # def hook2(self, input, output):
+                #     # print('Inside ' + self.__class__.__name__ + ' forward')
+                #     activations2.append(output.detach().squeeze().cpu().numpy())
+                # for la in model2.layers:
+                #     la.register_forward_hook(hook2)
+                # for a in activations2:
+                #     print('model2: ', a.shape, type(a))
+                t3 = Thread(target=get_activations, args=(model1_path, n_layers1, features1, drop1, sample_data, 'model1'), daemon=True)
+                t4 = Thread(target=get_activations, args=(model2_path, n_layers2, features2, drop2, sample_data, 'model2'), daemon=True)
+                t3.start()
+                t4.start()
 
 
 start_server = websockets.serve(hello, "192.168.1.98", 6060)

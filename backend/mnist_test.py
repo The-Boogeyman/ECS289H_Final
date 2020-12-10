@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
+from torchvision import transforms
 import matplotlib.pyplot as plt
 
 
@@ -131,7 +132,7 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
                   drop_out_rate=drop_out_rate).to(device)
     optimizer = optim.Adadelta(model.parameters(), lr=init_lr)
     scheduler = StepLR(optimizer, step_size=1, gamma=lr_step_gamma)
-    # print(flag, model)
+    print(flag, model)
     out_path = os.path.join(outputdir, flag)
     os.makedirs(out_path, exist_ok=True)
     # train and test
@@ -145,14 +146,17 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
         test(model, device, test_loader, test_loss_list, test_acc_list, epoch, flag)
         scheduler.step()
         # save trained model & training and testing results
-        model_path = os.path.join(out_path, f'epoch.{epoch}.statedict.pt.gz')
+        # model_path = os.path.join(out_path, f'epoch.{epoch}.statedict.pt.gz')
+        model_path = os.path.join(out_path, f'epoch.{epoch}.pt.gz')
         np.save(os.path.join(out_path, f'epoch.{epoch}.train_loss.npy'), train_loss_list)
         np.save(os.path.join(out_path, f'epoch.{epoch}.test_acc.npy'), train_acc_list)
         np.save(os.path.join(out_path, f'epoch.{epoch}.test_loss.npy'), test_loss_list)
         np.save(os.path.join(out_path, f'epoch.{epoch}.test_acc.npy'), test_acc_list)
 
         with gzip.open(model_path, 'wb') as f:
-            torch.save(model.state_dict(), f)
+            # torch.save(model.state_dict(), f)
+            torch.save(model, f)
+
         if epoch >= 2:
             # save current version
             cur_model_path = os.path.join(out_path, 'model.statedict.pt.gz')
@@ -170,3 +174,28 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
         # with gzip.open(model_path, 'rb') as f:
         #     model.load_state_dict(torch.load(f))
         #     model.to(device)
+
+
+def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag):
+    print(f'Start generating activations for {flag}')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    copy_model = Model(n_layers=n_layers, output_sizes=features, drop_out_rate=drop).to(device)
+    with gzip.open(copy_model_path, 'rb') as copy_f:
+        copy_model = torch.load(copy_f)
+        copy_model.to(device)
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,))
+        ])
+        sample_tensor = transform(sample_data).to(device)
+        sample_tensor = sample_tensor.unsqueeze(0)
+        sample_output = copy_model(sample_tensor)
+        print(f'{flag}, sample_output: {sample_output}')
+        activations = []
+        def hook1(self, input, output):
+            # print('Inside ' + self.__class__.__name__ + ' forward')
+            activations.append(output.detach().squeeze().cpu().numpy())
+        for la in copy_model.layers:
+            la.register_forward_hook(hook1)
+        for a in activations:
+            print(flag, a.shape, type(a))
