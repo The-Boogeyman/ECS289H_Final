@@ -18,6 +18,7 @@
     </v-row>
     <v-row>
       <v-col>
+        <p><br/></p>
         <div v-if="model2Prd === null">Model2:</div>
         <div v-else>Model2 (Epoch: {{ epoch }}. Prediction: {{ model2Prd }}):</div>
       </v-col>
