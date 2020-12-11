@@ -19,15 +19,17 @@ export default {
     data: () => ({
         painting: false,
         ctx: null,
-        canvas: null
+        canvas: null,
+        rect: null
     }),
 
     mounted() {
         this.canvas = document.getElementById("canvas");
         this.ctx = this.canvas.getContext("2d");
-        this.canvas.height = 100;
-        this.canvas.width = 100;
-        this.ctx.fillRect(10,10,30,30)
+        this.canvas.height = 300;
+        this.canvas.width = 300;
+        this.rect = this.canvas.getBoundingClientRect();
+        //this.ctx.fillRect(10,10,30,30)
         //this.vueCanvas = ctx;
     },
 
@@ -48,13 +50,20 @@ export default {
             console.log("Mouse at " + e.clientX + ", " + e.clientY)
 
             this.ctx.lineWidth = 10;
-            this.ctx.lineCap ="round"
+            this.ctx.lineCap ="round";
+
+            var x = e.clientX - this.rect.left;
+            var y = e.clientY - this.rect.top;
             
-            this.ctx.lineTo(e.clientX,e.clientY)
+            this.ctx.lineTo(x, y)
             this.ctx.stroke()
 
             this.ctx.beginPath()
-            this.ctx.moveTo(e.clientX,e.clientY)
+            this.ctx.moveTo(x, y)
+
+            //this.ctx.fillRect(e.clientX,e.clientY,30,30)
+            //this.ctx.fillRect(10, 10,30,30)
+            //console.log("Box")
         }
     }
 }
