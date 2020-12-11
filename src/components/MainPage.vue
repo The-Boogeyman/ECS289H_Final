@@ -144,6 +144,14 @@
         </v-row>
         <v-row>
           <v-col>
+            <drawing />
+            <p>
+              Drawing
+            </p>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
             <imgModification />
           </v-col>
         </v-row>
@@ -159,6 +167,7 @@ import plotLossTest from "@/components/plotLossTest.vue";
 import plotAccTest from "@/components/plotAccTest.vue";
 import plotMnist from "@/components/plotMnist.vue";
 import imgModification from "@/components/imgModification.vue";
+import drawing from "@/components/drawing.vue";
 
 export default {
   components: {
@@ -168,6 +177,7 @@ export default {
     plotAccTest,
     plotMnist,
     imgModification,
+    drawing,
   },
 
   data: () => ({

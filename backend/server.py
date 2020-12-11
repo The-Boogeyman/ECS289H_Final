@@ -160,8 +160,8 @@ async def hello(websocket, path):
                 print(f'Send {len(model2_actname)} activations for model2. Prediction: {prediction2}. Epoch: {selected_epoch}')
 
 
-start_server = websockets.serve(hello, "192.168.1.98", 6060)
-# start_server = websockets.serve(hello, "192.168.1.3", 6060)
+#start_server = websockets.serve(hello, "192.168.1.98", 6060)
+start_server = websockets.serve(hello, "192.168.1.3", 6060)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()

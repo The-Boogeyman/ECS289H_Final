@@ -47,5 +47,9 @@
     "> 1%",
     "last 2 versions",
     "not dead"
-  ]
+  ],
+  "rules": {
+    "no-console": "off",
+    "no-unused-vars": "off"
+  }
 }

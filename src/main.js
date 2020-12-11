@@ -5,17 +5,17 @@ import websocket from 'vue-native-websocket'
 
 Vue.config.productionTip = false
 
-Vue.use(websocket, 'ws://192.168.1.98:6060', {
- reconnection: true,
- reconnectionAttempts: 5,
- reconnectionDelay: 3000
-})
+//Vue.use(websocket, 'ws://192.168.1.98:6060', {
+// reconnection: true,
+// reconnectionAttempts: 5,
+// reconnectionDelay: 3000
+//})
 
-// Vue.use(websocket, 'ws://192.168.1.3:6060', {
-//   reconnection: true,
-//   reconnectionAttempts: 5,
-//   reconnectionDelay: 3000
-// })
+Vue.use(websocket, 'ws://192.168.1.3:6060', {
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 3000
+})
 
 new Vue({
   vuetify,
