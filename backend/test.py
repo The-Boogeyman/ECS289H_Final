@@ -1,10 +1,10 @@
-# import os
+import os
 # import gzip
-# import numpy as np
+import numpy as np
 # from PIL import Image
 # import torch
 # from torchvision import transforms
-# from utils import get_scatterdata, get_data
+from utils import get_total_dataset
 # from mnist_test import Model
 
 # # Suppose we have already got some trained models. And saved in the folder "2020-12-09-15-19-37/model2"
@@ -67,3 +67,10 @@
 #     print(a.shape)
 
 # print("End")
+
+mnist, mnist_target, train, train_target, test, test_target = get_total_dataset()
+
+# mnist: concatenate train + test
+print(f'mnist total: {type(mnist)}, {type(mnist_target)}, {mnist.shape}, {mnist_target.shape}')
+print(f'train: {type(train)}, {type(train_target)}, {train.shape}, {train_target.shape}')
+print(f'test: {type(test)}, {type(test_target)}, {test.shape}, {test_target.shape}')
