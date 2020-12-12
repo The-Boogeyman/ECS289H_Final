@@ -7,7 +7,7 @@
         <br />
         (Epoch: {{ epoch }})
         <br />
-        (Prediction: {{ model1Prd }}) 
+        (Prediction: {{ model1Prd }})
       </v-col>
       <v-col v-for="act1 in model1Activations" :key="act1.id">
         <div>{{ act1.name }}</div>

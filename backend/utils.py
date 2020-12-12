@@ -188,7 +188,7 @@ def get_scatterdata():
                 ftxt.write(f'        {content_list}\n')
                 ftxt.write('      ]\n')
                 ftxt.write('    },\n')
-    
+
     write_path = os.path.join(os.path.dirname(
         os.getcwd()), 'src', 'data', 'mnistInfoTest.js')
     with open(write_path, 'a') as ftxt:

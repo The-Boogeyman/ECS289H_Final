@@ -1,14 +1,9 @@
 <template>
   <v-app>
-    <v-app-bar
-      app
-      color="primary"
-      dark
-      dense
-      flat
-    >
+    <v-app-bar app color="primary" dark dense flat>
       <v-toolbar-title class="font-weight-bold subtitle-1">
-        Comparative Study of Convolutional Neural Networks through Interactive Visualization
+        Comparative Study of Convolutional Neural Networks through Interactive
+        Visualization
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
@@ -24,16 +19,16 @@
     </v-app-bar>
 
     <v-main>
-      <MainPage/>
+      <MainPage />
     </v-main>
   </v-app>
 </template>
 
 <script>
-import MainPage from './components/MainPage';
+import MainPage from "./components/MainPage";
 
 export default {
-  name: 'App',
+  name: "App",
 
   components: {
     MainPage,

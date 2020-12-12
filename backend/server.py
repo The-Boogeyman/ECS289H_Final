@@ -158,10 +158,12 @@ async def hello(websocket, path):
                 os.remove(annotated_path)
             with open(annotated_path, "wb") as f:
                 f.write(annotated_data)
-            annotated_input_img = Image.open(annotated_path).convert('L').resize((28, 28))
+            annotated_input_img = Image.open(
+                annotated_path).convert('L').resize((28, 28))
             annotated_input_data = np.asarray(annotated_input_img)
             # print('annotated_input_img: ', annotated_input_data.shape)
-            np.save(os.path.join(temp_dir, 'annotated.npy'), annotated_input_data)
+            np.save(os.path.join(temp_dir, 'annotated.npy'),
+                    annotated_input_data)
             model1_actname, prediction1 = get_activations(
                 model1_path, n_layers1, features1, drop1, annotated_input_data, 'model1', 'annotated')
             model2_actname, prediction2 = get_activations(
