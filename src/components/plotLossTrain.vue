@@ -9,6 +9,7 @@ export default {
   name: "plotLossTrain",
 
   data: () => ({
+    selectedEpoch: null,
     id: "trainLoss",
     chart: null,
     option: {
@@ -53,9 +54,11 @@ export default {
       this.chart.setOption(this.option);
       this.chart.on("click", (params) => {
         if (params.componentType === "xAxis") {
-          this.$socket.send("request_activations***" + params.value);
+          this.selectedEpoch = params.value;
+          // this.$socket.send("request_activations***" + params.value);
         } else {
-          this.$socket.send("request_activations***" + params.name);
+          this.selectedEpoch = params.name;
+          // this.$socket.send("request_activations***" + params.name);
         }
       });
     },
@@ -78,6 +81,15 @@ export default {
         this.updateValue(epoch, model1Loss, model2Loss);
       }
     };
+  },
+  watch: {
+    selectedEpoch: {
+      handler(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.$socket.send("request_activations***" + newVal);
+        }
+      },
+    },
   },
 };
 </script>
