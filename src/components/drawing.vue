@@ -66,7 +66,9 @@ export default {
     },
     draw(e) {
       if (!this.painting) return;
+      this.rect = this.canvas.getBoundingClientRect();
       console.log("Mouse at " + e.clientX + ", " + e.clientY);
+      console.log("Origin " + this.rect.left + ", " + this.rect.right)
       this.ctx.lineWidth = 10;
       this.ctx.lineCap = "round";
       var x = e.clientX - this.rect.left;
