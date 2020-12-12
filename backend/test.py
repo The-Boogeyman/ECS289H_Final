@@ -2,10 +2,10 @@ import os
 # import gzip
 import numpy as np
 # from PIL import Image
-# import torch
+import torch
 # from torchvision import transforms
-from utils import get_total_dataset
-# from mnist_test import Model
+from utils import get_dataset_from_np, make_outputdir, get_data
+from mnist_test import mnist_main
 
 # # Suppose we have already got some trained models. And saved in the folder "2020-12-09-15-19-37/model2"
 # # Suppose we want to load model from Epoch 9
@@ -68,19 +68,24 @@ from utils import get_total_dataset
 
 # print("End")
 
-def threshold(data, t = 15):
-    data[data>=t] = 255
-    data[data<t] = 0
-    return data
+# def threshold(data, t = 15):
+#     data[data>=t] = 255
+#     data[data<t] = 0
+#     return data
 
-mnist, mnist_target, train, train_target, test, test_target = get_total_dataset()
+# mnist, mnist_target, train, train_target, test, test_target = get_total_dataset()
 
-# mnist: concatenate train + test
-print(f'mnist total: {type(mnist)}, {type(mnist_target)}, {mnist.shape}, {mnist_target.shape}')
-print(f'train: {type(train)}, {type(train_target)}, {train.shape}, {train_target.shape}')
-print(f'test: {type(test)}, {type(test_target)}, {test.shape}, {test_target.shape}')
+# # mnist: concatenate train + test
+# print(f'mnist total: {type(mnist)}, {type(mnist_target)}, {mnist.shape}, {mnist_target.shape}')
+# print(f'train: {type(train)}, {type(train_target)}, {train.shape}, {train_target.shape}')
+# print(f'test: {type(test)}, {type(test_target)}, {test.shape}, {test_target.shape}')
 
-print("Processing to binary images")
-np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_total_data.npy'), threshold(mnist))
-np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_train_data.npy'), threshold(train))
-np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_test_data.npy'), threshold(test))
+# print("Processing to binary images")
+# np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_total_data_b.npy'), threshold(mnist))
+# np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_train_data_b.npy'), threshold(train))
+# np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_test_data_b.npy'), threshold(test))
+
+train_set, test_set = get_dataset_from_np()
+outputdir, timestamp = make_outputdir()
+# # print(type(train_set), type(test_set))
+mnist_main(30, 512, 0.7, 2, [16, 32], -1., 0.001, train_set, test_set, outputdir, 'model1')

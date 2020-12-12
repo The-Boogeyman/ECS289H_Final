@@ -69,6 +69,7 @@ def train(model, device, train_loader, optimizer, train_loss_list, train_acc_lis
     correct = 0
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
+        # print(data.size(), target.size())
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)

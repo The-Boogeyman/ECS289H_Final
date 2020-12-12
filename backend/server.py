@@ -10,10 +10,10 @@ from PIL import Image
 import torch
 from torchvision import transforms
 from mnist_test import Model, mnist_main, get_activations
-from utils import make_outputdir, get_data
+from utils import make_outputdir, get_dataset_from_np
 
 
-train_set, test_set = get_data()
+train_set, test_set = get_dataset_from_np()
 
 
 async def hello(websocket, path):
@@ -90,8 +90,10 @@ async def hello(websocket, path):
             print('request image: ', Index)
             temp_dir = os.path.join(os.getcwd(), 'temp')
             os.makedirs(temp_dir, exist_ok=True)
-            test_set_np = test_set.data.numpy()
-            test_set_target_np = test_set.targets.numpy()
+            test_set_np = np.load(os.path.join(os.path.dirname(
+                os.path.dirname(os.getcwd())), 'data', 'mnist_test_data_b.npy'))
+            test_set_target_np = np.load(os.path.join(os.path.dirname(
+                os.path.dirname(os.getcwd())), 'data', 'mnist_test_target.npy'))
             sample_data = test_set_np[Index]
             np.save(os.path.join(temp_dir, 'org.npy'), sample_data)
             sample_label = test_set_target_np[Index]
@@ -118,8 +120,7 @@ async def hello(websocket, path):
             temp_dir = os.path.join(os.getcwd(), 'temp')
             if os.path.exists(model1_path) and os.path.exists(model2_path) and os.path.exists(os.path.join(temp_dir, 'org.npy')):
                 # print('sample_data: ', type(sample_data), sample_data.shape)
-                sample_data = np.load(os.path.join(
-                    temp_dir, 'org.npy'))
+                sample_data = np.load(os.path.join(temp_dir, 'org.npy'))
                 model1_actname, prediction1 = get_activations(
                     model1_path, n_layers1, features1, drop1, sample_data, 'model1', 'org')
                 model2_actname, prediction2 = get_activations(

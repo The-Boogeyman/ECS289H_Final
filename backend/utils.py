@@ -4,8 +4,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import umap
+import torch
 from torchvision import datasets, transforms
 from PIL import Image
+
+
+class mnistDataset(torch.utils.data.Dataset):
+    def __init__(self, data, target):
+        self.transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,))
+        ])
+        self.data = data
+        self.target = target
+
+    def __len__(self):
+        return self.data.shape[0]
+
+    def __getitem__(self, idx):
+        img = self.data[idx]
+        img = self.transform(img)
+        img_label = int(self.target[idx])
+        img_label_tensor = torch.as_tensor(img_label, dtype=torch.long)
+        return img, img_label_tensor
 
 
 def get_data():
@@ -65,6 +86,33 @@ def get_total_dataset():
     # print(mnist.shape, train_set_np.shape, test_set_np.shape)
     return mnist, mnist_target, train_set_np, train_set_target_np, test_set_np, test_set_target_np
 
+
+def get_dataset_from_np():
+    if not os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_train_data_b.npy')):
+        def threshold(data, t = 15):
+            data[data>=t] = 255
+            data[data<t] = 0
+            return data
+        mnist, _, train, _, test, _ = get_total_dataset()
+        # mnist: concatenate train + test
+        # print(f'mnist total: {type(mnist)}, {type(mnist_target)}, {mnist.shape}, {mnist_target.shape}')
+        # print(f'train: {type(train)}, {type(train_target)}, {train.shape}, {train_target.shape}')
+        # print(f'test: {type(test)}, {type(test_target)}, {test.shape}, {test_target.shape}')
+        # print("Processing to binary images")
+        np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_total_data_b.npy'), threshold(mnist))
+        np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_train_data_b.npy'), threshold(train))
+        np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_test_data_b.npy'), threshold(test))
+    train = np.load(os.path.join(os.path.dirname(
+        os.path.dirname(os.getcwd())), 'data', 'mnist_train_data_b.npy'))
+    train_target = np.load(os.path.join(os.path.dirname(
+        os.path.dirname(os.getcwd())), 'data', 'mnist_train_target.npy'))
+    test = np.load(os.path.join(os.path.dirname(
+        os.path.dirname(os.getcwd())), 'data', 'mnist_test_data_b.npy'))
+    test_target = np.load(os.path.join(os.path.dirname(
+        os.path.dirname(os.getcwd())), 'data', 'mnist_test_target.npy'))
+    train_set = mnistDataset(train, train_target)
+    test_set = mnistDataset(test, test_target)
+    return train_set, test_set
 
 def make_outputdir(postfix=''):
     if postfix is None:
