@@ -141,7 +141,9 @@ async def hello(websocket, path):
         elif 'request_annotated_activations' in rec_m:
             annotated_img = rec_m.split('***')[1]
             # TODO annotated_img is base64 format, save it as a png file *******
-            annotated_img = annotated_img.lstrip('data:image/png;base64,')
+            #annotated_img = annotated_img.lstrip('data:image/png;base64,')
+            prefix = "data:image/png;base64,"
+            annotated_img = annotated_img[len(prefix):]
             print(len(annotated_img))
             if len(annotated_img) % 4 != 0:
                 print(f'add {(4 - len(annotated_img) % 4)} =')
@@ -155,8 +157,8 @@ async def hello(websocket, path):
             with open(annotated_path, "wb") as f:
                 f.write(annotated_data)
 
-start_server = websockets.serve(hello, "192.168.1.98", 6060)
-# start_server = websockets.serve(hello, "192.168.1.3", 6060)
+#start_server = websockets.serve(hello, "192.168.1.98", 6060)
+start_server = websockets.serve(hello, "192.168.1.3", 6060)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
