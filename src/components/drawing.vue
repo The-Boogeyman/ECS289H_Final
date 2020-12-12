@@ -2,7 +2,7 @@
   <v-container fluid>
     <v-row>
       <v-col>
-        <p>Canvas</p>
+        <p>Canvas<v-icon text @click="saveImg(canvas)">mdi-send</v-icon></p>
         <canvas
           id="canvas"
           width="300"
@@ -36,7 +36,9 @@ export default {
     this.canvas.height = 300;
     this.canvas.width = 300;
     this.rect = this.canvas.getBoundingClientRect();
-    //this.ctx.fillRect(10,10,30,30)
+    this.ctx.fillRect(0, 0, 300, 300);
+    this.ctx.strokeStyle = "#ff0200";
+    this.ctx.stroke();
     //this.vueCanvas = ctx;
     this.$options.sockets.onmessage = (res) => {
       res = res.data;
@@ -54,22 +56,21 @@ export default {
   methods: {
     startPainting(e) {
       this.painting = true;
-        console.log(this.painting);
+      console.log(this.painting);
       this.draw(e);
     },
     finishedPainting() {
       this.painting = false;
-        console.log(this.painting);
+      console.log(this.painting);
       this.ctx.beginPath();
     },
     draw(e) {
       if (!this.painting) return;
-        console.log("Mouse at " + e.clientX + ", " + e.clientY);
+      console.log("Mouse at " + e.clientX + ", " + e.clientY);
       this.ctx.lineWidth = 10;
       this.ctx.lineCap = "round";
       var x = e.clientX - this.rect.left;
       var y = e.clientY - this.rect.top;
-
       this.ctx.lineTo(x, y);
       this.ctx.stroke();
       this.ctx.beginPath();
@@ -78,6 +79,10 @@ export default {
       //this.ctx.fillRect(10, 10,30,30)
       //console.log("Box")
     },
+    saveImg(e) {
+        console.log(e.toDataURL())
+        this.$socket.send("request_annotated_activations***" + e.toDataURL());
+    }
   },
 };
 </script>

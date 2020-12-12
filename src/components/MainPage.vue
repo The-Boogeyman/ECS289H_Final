@@ -243,7 +243,7 @@ export default {
       this.lr2 = 0.001;
     },
     sync: function() {
-      this.$socket.send("refresh");
+      this.$socket.send("refresh***");
     },
   },
 
