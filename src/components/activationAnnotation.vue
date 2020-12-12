@@ -1,36 +1,27 @@
 <template>
-  <v-container fluid v-if="model1Org !== null">
-    <v-row>
-      <v-col>
-        <div v-if="model1Prd === null">Model1:</div>
-        <div v-else>
-          Model1 (Epoch: {{ epoch }}. Prediction: {{ model1Prd }}):
-        </div>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <div>Ground-Truth: {{ label }}</div>
-        <v-img :src="model1Org" width="100" contain></v-img>
+  <v-container fluid v-if="model1Prd !== null">
+    <v-row no-gutters>
+      <v-col cols="1">
+        <br />
+        Model1
+        <br />
+        (Epoch: {{ epoch }})
+        <br />
+        (Prediction: {{ model1Prd }}) 
       </v-col>
       <v-col v-for="act1 in model1Activations" :key="act1.id">
         <div>{{ act1.name }}</div>
         <v-img :src="act1.img" width="100" contain></v-img>
       </v-col>
     </v-row>
-    <v-row>
-      <v-col>
-        <p><br /></p>
-        <div v-if="model2Prd === null">Model2:</div>
-        <div v-else>
-          Model2 (Epoch: {{ epoch }}. Prediction: {{ model2Prd }}):
-        </div>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <div>Ground-Truth: {{ label }}</div>
-        <v-img :src="model2Org" width="100" contain></v-img>
+    <v-row no-gutters>
+      <v-col cols="1">
+        <br />
+        Model2
+        <br />
+        (Epoch: {{ epoch }})
+        <br />
+        (Prediction: {{ model2Prd }})
       </v-col>
       <v-col v-for="act2 in model2Activations" :key="act2.id">
         <div>{{ act2.name }}</div>
@@ -42,12 +33,9 @@
 
 <script>
 export default {
-  name: "imgModification",
+  name: "activationAnnotation",
 
   data: () => ({
-    model1Org: null,
-    model2Org: null,
-    label: null,
     model1Prd: null,
     model2Prd: null,
     epoch: null,
@@ -57,14 +45,7 @@ export default {
   mounted() {
     this.$options.sockets.onmessage = (res) => {
       res = res.data;
-      if (res.indexOf("sample_img***") !== -1) {
-        this.model1Activations = [];
-        this.model2Activations = [];
-        res = res.split("***");
-        this.model1Org = "data:image/png;base64," + res[1];
-        this.model2Org = "data:image/png;base64," + res[1];
-        this.label = res[2];
-      } else if (res.indexOf("model1Activations***") !== -1) {
+      if (res.indexOf("model1AnnotationActivations***") !== -1) {
         this.model1Activations = [];
         res = res.split("***");
         const imgLength = parseInt(res[1]);
@@ -78,7 +59,7 @@ export default {
             img: "data:image/png;base64," + res[5 + 2 * i],
           });
         }
-      } else if (res.indexOf("model2Activations***") !== -1) {
+      } else if (res.indexOf("model2AnnotationActivations***") !== -1) {
         this.model2Activations = [];
         res = res.split("***");
         const imgLength = parseInt(res[1]);
@@ -91,6 +72,12 @@ export default {
             img: "data:image/png;base64," + res[5 + 2 * i],
           });
         }
+      } else if (res.indexOf("clearActivations2***") !== -1) {
+        this.model1Prd = null;
+        this.model2Prd = null;
+        this.epoch = null;
+        this.model1Activations = [];
+        this.model2Activations = [];
       }
     };
   },

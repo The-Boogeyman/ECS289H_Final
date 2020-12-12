@@ -185,8 +185,8 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
         #     model.to(device)
 
 
-def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag):
-    # print(f'Start generating activations for {flag}')
+def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag1, flag2):
+    # print(f'Start generating activations for {flag1}')
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # copy_model = Model(n_layers=n_layers, output_sizes=features, drop_out_rate=drop).to(device)
     copy_model = Model(n_layers=n_layers,
@@ -215,16 +215,16 @@ def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag
         la.register_forward_hook(hook)
 
     sample_output = copy_model(sample_tensor)
-    # print(f'{flag}, sample_output: {sample_output}')
+    # print(f'{flag1}, sample_output: {sample_output}')
     prediction = int(sample_output.argmax(dim=1, keepdim=True))
     # for a in activations:
-    #     print(flag, a.shape, type(a))
+    #     print(flag1, a.shape, type(a))
 
     temp_dir = os.path.join(os.getcwd(), 'temp')
 
     # delete old activations for this model
     for fname in os.listdir(temp_dir):
-        if fname.startswith(flag):
+        if fname.startswith(f'{flag1}.{flag2}'):
             os.remove(os.path.join(temp_dir, fname))
 
     saved_activations_name = []
@@ -233,8 +233,8 @@ def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag
         if(activations[i].ndim == 3):
             random_select = random.randint(0, activations[i].shape[0] - 1)
             im = activations[i][random_select, :, :]
-            # print("Saving " + os.path.join(temp_dir, flag + "_l" + str(i)) + ".png")
+            # print("Saving " + os.path.join(temp_dir, flag1 + "_l" + str(i)) + ".png")
             plt.imsave(os.path.join(
-                temp_dir, f'{flag}_{activations_name[i]}.png'), im)
+                temp_dir, f'{flag1}.{flag2}_{activations_name[i]}.png'), im)
             saved_activations_name.append(activations_name[i])
     return saved_activations_name, prediction

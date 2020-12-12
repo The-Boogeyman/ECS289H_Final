@@ -45,10 +45,10 @@ export default {
         data: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
       },
       grid: {
-        left: 50,
-        right: 50,
-        top: 50,
-        bottom: 50,
+        left: 10,
+        right: 10,
+        top: 10,
+        bottom: 10,
       },
       tooltip: {
         trigger: "item",

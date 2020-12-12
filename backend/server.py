@@ -93,19 +93,22 @@ async def hello(websocket, path):
             test_set_np = test_set.data.numpy()
             test_set_target_np = test_set.targets.numpy()
             sample_data = test_set_np[Index]
-            np.save(os.path.join(temp_dir, 'sample_data_org.npy'), sample_data)
+            np.save(os.path.join(temp_dir, 'org.npy'), sample_data)
             sample_label = test_set_target_np[Index]
             sample_img = Image.fromarray(sample_data)
-            sample_img.save(os.path.join(temp_dir, 'sample_img_org.png'))
-            with open(os.path.join(temp_dir, 'sample_img_org.png'), 'rb') as f:
+            sample_img.save(os.path.join(temp_dir, 'org.png'))
+            with open(os.path.join(temp_dir, 'org.png'), 'rb') as f:
                 img_data = base64.b64encode(f.read()).decode('utf-8')
             sendMsg = "sample_img***" + img_data + '***' + str(sample_label)
             await websocket.send(sendMsg)
             sendMsg = "sample_canvas***" + img_data + '***' + str(sample_label)
             await websocket.send(sendMsg)
+            await websocket.send("clearActivations1***")
+            await websocket.send("clearActivations2***")
             print('Send the requested original image to the front end')
         elif 'request_activations' in rec_m:
             selected_epoch = int(rec_m.split('***')[1])
+            await websocket.send('epochSelected***')
             print(
                 f'received request to load mode from epoch {selected_epoch}. Start to generate activations')
             model1_path = os.path.join(
@@ -113,42 +116,41 @@ async def hello(websocket, path):
             model2_path = os.path.join(
                 outputdir, 'model2', f'epoch.{selected_epoch}.pt.gz')
             temp_dir = os.path.join(os.getcwd(), 'temp')
-            if os.path.exists(model1_path) and os.path.exists(model2_path) and os.path.exists(os.path.join(temp_dir, 'sample_data_org.npy')):
+            if os.path.exists(model1_path) and os.path.exists(model2_path) and os.path.exists(os.path.join(temp_dir, 'org.npy')):
+                # print('sample_data: ', type(sample_data), sample_data.shape)
                 sample_data = np.load(os.path.join(
-                    temp_dir, 'sample_data_org.npy'))
+                    temp_dir, 'org.npy'))
                 model1_actname, prediction1 = get_activations(
-                    model1_path, n_layers1, features1, drop1, sample_data, 'model1')
+                    model1_path, n_layers1, features1, drop1, sample_data, 'model1', 'org')
                 model2_actname, prediction2 = get_activations(
-                    model2_path, n_layers2, features2, drop2, sample_data, 'model2')
+                    model2_path, n_layers2, features2, drop2, sample_data, 'model2', 'org')
                 sendMsg = f"model1Activations***{len(model1_actname)}***{prediction1}***{selected_epoch}"
                 for i in range(len(model1_actname)):
                     act_name = model1_actname[i]
-                    with open(os.path.join(temp_dir, f'model1_{act_name}.png'), 'rb') as f:
+                    with open(os.path.join(temp_dir, f'model1.org_{act_name}.png'), 'rb') as f:
                         img_data = base64.b64encode(f.read()).decode('utf-8')
                     sendMsg += f'***{act_name}***{img_data}'
                 await websocket.send(sendMsg)
                 sendMsg = f"model2Activations***{len(model2_actname)}***{prediction2}***{selected_epoch}"
                 for i in range(len(model2_actname)):
                     act_name = model2_actname[i]
-                    with open(os.path.join(temp_dir, f'model2_{act_name}.png'), 'rb') as f:
+                    with open(os.path.join(temp_dir, f'model2.org_{act_name}.png'), 'rb') as f:
                         img_data = base64.b64encode(f.read()).decode('utf-8')
                     sendMsg += f'***{act_name}***{img_data}'
                 await websocket.send(sendMsg)
                 print(
-                    f'Send {len(model1_actname)} activations for model1. Prediction: {prediction1}. Epoch: {selected_epoch}')
+                    f'Model1 Org activation sent. Prediction: {prediction1}. Epoch: {selected_epoch}')
                 print(
-                    f'Send {len(model2_actname)} activations for model2. Prediction: {prediction2}. Epoch: {selected_epoch}')
+                    f'Model2 Org activation sent. Prediction: {prediction2}. Epoch: {selected_epoch}')
         elif 'request_annotated_activations' in rec_m:
             annotated_img = rec_m.split('***')[1]
-            # TODO annotated_img is base64 format, save it as a png file *******
-            #annotated_img = annotated_img.lstrip('data:image/png;base64,')
             prefix = "data:image/png;base64,"
             annotated_img = annotated_img[len(prefix):]
-            print(len(annotated_img))
+            # print(len(annotated_img))
             if len(annotated_img) % 4 != 0:
-                print(f'add {(4 - len(annotated_img) % 4)} =')
+                # print(f'add {(4 - len(annotated_img) % 4)} =')
                 annotated_img += '=' * (4 - len(annotated_img) % 4)
-            print(len(annotated_img))
+            # print(len(annotated_img))
             annotated_data = base64.b64decode(annotated_img)
             temp_dir = os.path.join(os.getcwd(), 'temp')
             annotated_path = os.path.join(temp_dir, 'annotated.png')
@@ -156,9 +158,35 @@ async def hello(websocket, path):
                 os.remove(annotated_path)
             with open(annotated_path, "wb") as f:
                 f.write(annotated_data)
+            annotated_input_img = Image.open(annotated_path).convert('L').resize((28, 28))
+            annotated_input_data = np.asarray(annotated_input_img)
+            # print('annotated_input_img: ', annotated_input_data.shape)
+            np.save(os.path.join(temp_dir, 'annotated.npy'), annotated_input_data)
+            model1_actname, prediction1 = get_activations(
+                model1_path, n_layers1, features1, drop1, annotated_input_data, 'model1', 'annotated')
+            model2_actname, prediction2 = get_activations(
+                model2_path, n_layers2, features2, drop2, annotated_input_data, 'model2', 'annotated')
+            sendMsg = f"model1AnnotationActivations***{len(model1_actname)}***{prediction1}***{selected_epoch}"
+            for i in range(len(model1_actname)):
+                act_name = model1_actname[i]
+                with open(os.path.join(temp_dir, f'model1.annotated_{act_name}.png'), 'rb') as f:
+                    img_data = base64.b64encode(f.read()).decode('utf-8')
+                sendMsg += f'***{act_name}***{img_data}'
+            await websocket.send(sendMsg)
+            sendMsg = f"model2AnnotationActivations***{len(model2_actname)}***{prediction2}***{selected_epoch}"
+            for i in range(len(model2_actname)):
+                act_name = model2_actname[i]
+                with open(os.path.join(temp_dir, f'model2.annotated_{act_name}.png'), 'rb') as f:
+                    img_data = base64.b64encode(f.read()).decode('utf-8')
+                sendMsg += f'***{act_name}***{img_data}'
+            await websocket.send(sendMsg)
+            print(
+                f'Model1 annotated activation sent. Prediction: {prediction1}. Epoch: {selected_epoch}')
+            print(
+                f'Model2 annotated activation sent. Prediction: {prediction2}. Epoch: {selected_epoch}')
 
-#start_server = websockets.serve(hello, "192.168.1.98", 6060)
-start_server = websockets.serve(hello, "192.168.1.3", 6060)
+start_server = websockets.serve(hello, "192.168.1.98", 6060)
+# start_server = websockets.serve(hello, "192.168.1.3", 6060)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
