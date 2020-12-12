@@ -15,7 +15,7 @@ export default {
       xAxis: {
         name: "Epoch",
         data: [],
-        triggerEvent: true
+        triggerEvent: true,
       },
       yAxis: {
         type: "value",
@@ -28,10 +28,10 @@ export default {
         left: 50,
         right: 50,
         top: 50,
-        bottom: 50
+        bottom: 50,
       },
       tooltip: {
-        trigger: 'axis'
+        trigger: "axis",
       },
       series: [
         {
@@ -53,9 +53,9 @@ export default {
       this.chart.setOption(this.option);
       this.chart.on("click", (params) => {
         if (params.componentType === "xAxis") {
-          this.$socket.send("request_activations***" + params.value)
+          this.$socket.send("request_activations***" + params.value);
         } else {
-          this.$socket.send("request_activations***" + params.name)
+          this.$socket.send("request_activations***" + params.name);
         }
       });
     },
@@ -66,7 +66,7 @@ export default {
       this.chart.setOption(this.option);
     },
   },
-  mounted () {
+  mounted() {
     this.$options.sockets.onmessage = (res) => {
       res = res.data;
       if (res.indexOf("plotAccTest***") !== -1) {
@@ -75,9 +75,9 @@ export default {
         var model1Acc = JSON.parse(res[2]);
         var model2Acc = JSON.parse(res[3]);
         this.init();
-        this.updateValue(epoch, model1Acc, model2Acc)
+        this.updateValue(epoch, model1Acc, model2Acc);
       }
     };
-  }
+  },
 };
 </script>

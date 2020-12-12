@@ -138,16 +138,13 @@
             <plotLossTest />
             <plotAccTest />
           </v-col>
-          <v-col cols="auto" v-if="refresh===true">
+          <v-col cols="auto" v-if="refresh === true">
             <v-icon @click="sync">mdi-sync</v-icon>
           </v-col>
         </v-row>
         <v-row>
           <v-col>
             <drawing />
-            <p>
-              Drawing
-            </p>
           </v-col>
         </v-row>
         <v-row>
@@ -246,8 +243,8 @@ export default {
       this.lr2 = 0.001;
     },
     sync: function() {
-      this.$socket.send("refresh")
-    }
+      this.$socket.send("refresh");
+    },
   },
 
   mounted() {

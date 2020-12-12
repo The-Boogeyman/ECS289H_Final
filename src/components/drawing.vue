@@ -1,70 +1,93 @@
 <template>
-    <v-container fluid>
-        <p>
-            Canvas
+  <v-container fluid>
+    <v-row>
+      <v-col>
+        <p v-if="canvas !== null">
+          Canvas
         </p>
-        <canvas id="canvas" width = 100 height = 100 @mousedown="startPainting" @mouseup="finishedPainting" @mousemove="draw"></canvas>
-    </v-container>
+        <canvas
+          id="canvas"
+          width="100"
+          height="100"
+          @mousedown="startPainting"
+          @mouseup="finishedPainting"
+          @mousemove="draw"
+        ></canvas>
+        <v-img :src="orgImg" width="100" contain></v-img>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
 export default {
-    name: 'drawing',
-    //data() {
-    //    painting: false;
-    //    ctx: null;
-    //    canvas: null;
-    //},
+  name: "drawing",
+  //data() {
+  //    painting: false;
+  //    ctx: null;
+  //    canvas: null;
+  //},
 
-    data: () => ({
-        painting: false,
-        ctx: null,
-        canvas: null,
-        rect: null
-    }),
+  data: () => ({
+    painting: false,
+    ctx: null,
+    canvas: null,
+    rect: null,
+    orgImg: null,
+  }),
 
-    mounted() {
-        this.canvas = document.getElementById("canvas");
-        this.ctx = this.canvas.getContext("2d");
-        this.canvas.height = 300;
-        this.canvas.width = 300;
-        this.rect = this.canvas.getBoundingClientRect();
-        //this.ctx.fillRect(10,10,30,30)
-        //this.vueCanvas = ctx;
+  methods: {
+    init() {
+      this.canvas = document.getElementById("canvas");
+      this.ctx = this.canvas.getContext("2d");
+      this.canvas.height = 300;
+      this.canvas.width = 300;
+      this.rect = this.canvas.getBoundingClientRect();
+      //this.ctx.fillRect(10,10,30,30)
+      //this.vueCanvas = ctx;
     },
+    startPainting(e) {
+      this.painting = true;
+      console.log(this.painting);
+      this.draw(e);
+    },
+    finishedPainting() {
+      this.painting = false;
+      console.log(this.painting);
+      this.ctx.beginPath();
+    },
+    draw(e) {
+      if (!this.painting) return;
 
-    methods: {
-        startPainting(e) {
-            this.painting = true;
-            console.log(this.painting)
-            this.draw(e)
-        },
-        finishedPainting() {
-            this.painting = false;
-            console.log(this.painting);
-            this.ctx.beginPath()
-        },
-        draw(e) {
-            if(!this.painting) return
+      console.log("Mouse at " + e.clientX + ", " + e.clientY);
 
-            console.log("Mouse at " + e.clientX + ", " + e.clientY)
+      this.ctx.lineWidth = 10;
+      this.ctx.lineCap = "round";
 
-            this.ctx.lineWidth = 10;
-            this.ctx.lineCap ="round";
+      var x = e.clientX - this.rect.left;
+      var y = e.clientY - this.rect.top;
 
-            var x = e.clientX - this.rect.left;
-            var y = e.clientY - this.rect.top;
-            
-            this.ctx.lineTo(x, y)
-            this.ctx.stroke()
+      this.ctx.lineTo(x, y);
+      this.ctx.stroke();
 
-            this.ctx.beginPath()
-            this.ctx.moveTo(x, y)
+      this.ctx.beginPath();
+      this.ctx.moveTo(x, y);
 
-            //this.ctx.fillRect(e.clientX,e.clientY,30,30)
-            //this.ctx.fillRect(10, 10,30,30)
-            //console.log("Box")
-        }
-    }
-}
+      //this.ctx.fillRect(e.clientX,e.clientY,30,30)
+      //this.ctx.fillRect(10, 10,30,30)
+      //console.log("Box")
+    },
+  },
+
+  mounted() {
+    this.$options.sockets.onmessage = (res) => {
+      res = res.data;
+      if (res.indexOf("sample_canvas***") !== -1) {
+        res = res.split("***");
+        this.init();
+        this.orgImg = "data:image/png;base64," + res[1];
+      }
+    };
+  },
+};
 </script>

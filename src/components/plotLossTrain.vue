@@ -15,7 +15,7 @@ export default {
       xAxis: {
         name: "Epoch",
         data: [],
-        triggerEvent: true
+        triggerEvent: true,
       },
       yAxis: {
         type: "value",
@@ -31,7 +31,7 @@ export default {
         bottom: 50,
       },
       tooltip: {
-        trigger: 'axis'
+        trigger: "axis",
       },
       series: [
         {
@@ -53,9 +53,9 @@ export default {
       this.chart.setOption(this.option);
       this.chart.on("click", (params) => {
         if (params.componentType === "xAxis") {
-          this.$socket.send("request_activations***" + params.value)
+          this.$socket.send("request_activations***" + params.value);
         } else {
-          this.$socket.send("request_activations***" + params.name)
+          this.$socket.send("request_activations***" + params.name);
         }
       });
     },
@@ -75,7 +75,7 @@ export default {
         var model1Loss = JSON.parse(res[2]);
         var model2Loss = JSON.parse(res[3]);
         this.init();
-        this.updateValue(epoch, model1Loss, model2Loss)
+        this.updateValue(epoch, model1Loss, model2Loss);
       }
     };
   },

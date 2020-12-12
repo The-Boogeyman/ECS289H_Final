@@ -63,10 +63,10 @@ export default {
       },
       dataZoom: [
         {
-          type: 'inside',
+          type: "inside",
           xAxisIndex: [0],
-          yAxisIndex: [0]
-        }
+          yAxisIndex: [0],
+        },
       ],
       series: [
         {
@@ -138,7 +138,7 @@ export default {
       this.chart.setOption(this.option);
       this.chart.on("click", (params) => {
         console.log(params.value);
-        this.$socket.send("request_img***" + params.value[3])
+        this.$socket.send("request_img***" + params.value[3]);
       });
     },
   },
