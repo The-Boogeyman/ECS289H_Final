@@ -85,6 +85,8 @@ async def hello(websocket, path):
                 await websocket.send(sendMsg)
                 sendMsg = f"plotAccTest***{epoch_list}***{model1_test_acc[0:length]}***{model2_test_acc[0:length]}"
                 await websocket.send(sendMsg)
+            if os.path.exists(os.path.join(outputdir, 'model1', f'epoch.{epochs}.test_acc.npy')) and os.path.exists(os.path.join(outputdir, 'model2', f'epoch.{epochs}.test_acc.npy')):
+                await websocket.send('train_finished***')
         elif 'request_img' in rec_m:
             Index = int(rec_m.split('***')[1])
             print('request image: ', Index)
@@ -118,31 +120,30 @@ async def hello(websocket, path):
             model2_path = os.path.join(
                 outputdir, 'model2', f'epoch.{selected_epoch}.pt.gz')
             temp_dir = os.path.join(os.getcwd(), 'temp')
-            if os.path.exists(model1_path) and os.path.exists(model2_path) and os.path.exists(os.path.join(temp_dir, 'org.npy')):
-                # print('sample_data: ', type(sample_data), sample_data.shape)
-                sample_data = np.load(os.path.join(temp_dir, 'org.npy'))
-                model1_actname, prediction1 = get_activations(
-                    model1_path, n_layers1, features1, drop1, sample_data, 'model1', 'org')
-                model2_actname, prediction2 = get_activations(
-                    model2_path, n_layers2, features2, drop2, sample_data, 'model2', 'org')
-                sendMsg = f"model1Activations***{len(model1_actname)}***{prediction1}***{selected_epoch}"
-                for i in range(len(model1_actname)):
-                    act_name = model1_actname[i]
-                    with open(os.path.join(temp_dir, f'model1.org_{act_name}.png'), 'rb') as f:
-                        img_data = base64.b64encode(f.read()).decode('utf-8')
-                    sendMsg += f'***{act_name}***{img_data}'
-                await websocket.send(sendMsg)
-                sendMsg = f"model2Activations***{len(model2_actname)}***{prediction2}***{selected_epoch}"
-                for i in range(len(model2_actname)):
-                    act_name = model2_actname[i]
-                    with open(os.path.join(temp_dir, f'model2.org_{act_name}.png'), 'rb') as f:
-                        img_data = base64.b64encode(f.read()).decode('utf-8')
-                    sendMsg += f'***{act_name}***{img_data}'
-                await websocket.send(sendMsg)
-                print(
-                    f'Model1 Org activation sent. Prediction: {prediction1}. Epoch: {selected_epoch}')
-                print(
-                    f'Model2 Org activation sent. Prediction: {prediction2}. Epoch: {selected_epoch}')
+            # print('sample_data: ', type(sample_data), sample_data.shape)
+            sample_data = np.load(os.path.join(temp_dir, 'org.npy'))
+            model1_actname, prediction1 = get_activations(
+                model1_path, n_layers1, features1, drop1, sample_data, 'model1', 'org')
+            model2_actname, prediction2 = get_activations(
+                model2_path, n_layers2, features2, drop2, sample_data, 'model2', 'org')
+            sendMsg = f"model1Activations***{len(model1_actname)}***{prediction1}***{selected_epoch}"
+            for i in range(len(model1_actname)):
+                act_name = model1_actname[i]
+                with open(os.path.join(temp_dir, f'model1.org_{act_name}.png'), 'rb') as f:
+                    img_data = base64.b64encode(f.read()).decode('utf-8')
+                sendMsg += f'***{act_name}***{img_data}'
+            await websocket.send(sendMsg)
+            sendMsg = f"model2Activations***{len(model2_actname)}***{prediction2}***{selected_epoch}"
+            for i in range(len(model2_actname)):
+                act_name = model2_actname[i]
+                with open(os.path.join(temp_dir, f'model2.org_{act_name}.png'), 'rb') as f:
+                    img_data = base64.b64encode(f.read()).decode('utf-8')
+                sendMsg += f'***{act_name}***{img_data}'
+            await websocket.send(sendMsg)
+            print(
+                f'Model1 Org activation sent. Prediction: {prediction1}. Epoch: {selected_epoch}')
+            print(
+                f'Model2 Org activation sent. Prediction: {prediction2}. Epoch: {selected_epoch}')
         elif 'request_annotated_activations' in rec_m:
             annotated_img = rec_m.split('***')[1]
             prefix = "data:image/png;base64,"
@@ -163,6 +164,7 @@ async def hello(websocket, path):
                 annotated_path).convert('L').resize((28, 28))
             annotated_input_data = np.asarray(annotated_input_img)
             # print('annotated_input_img: ', annotated_input_data.shape)
+            annotated_input_data = np.copy(annotated_input_data)
             np.save(os.path.join(temp_dir, 'annotated.npy'),
                     annotated_input_data)
             model1_actname, prediction1 = get_activations(

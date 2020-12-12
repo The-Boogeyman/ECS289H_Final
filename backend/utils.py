@@ -23,7 +23,7 @@ class mnistDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         img = self.data[idx]
-        img = self.transform(img)
+        img = self.transform(np.array(img))
         img_label = int(self.target[idx])
         img_label_tensor = torch.as_tensor(img_label, dtype=torch.long)
         return img, img_label_tensor

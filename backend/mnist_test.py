@@ -30,15 +30,16 @@ class Model(nn.Module):
                 in_features = 1
             else:
                 in_features = output_sizes[i - 1]
-            if i == n_layers - 1:
+            # if i == n_layers - 1:
+            if i == 0:
                 self.layers.extend([
-                    nn.Conv2d(in_features, output_sizes[i], 3, 1),
+                    nn.Conv2d(in_features, output_sizes[i], 2, 1),
                     nn.ELU(),
                     nn.MaxPool2d(2, 2),
                 ])
             else:
                 self.layers.extend([
-                    nn.Conv2d(in_features, output_sizes[i], 3, 1),
+                    nn.Conv2d(in_features, output_sizes[i], 2, 1),
                     nn.ELU(),
                 ])
         self.layers.append(BatchFlatten())
@@ -57,10 +58,47 @@ class Model(nn.Module):
                 # nn.Softmax(dim=1)
             ])
         self.layers = nn.ModuleList(self.layers)
-
+        # self.layer1 = nn.Sequential(
+        #     nn.Conv2d(1, 8, 2, 1),
+        #     nn.ELU(),
+        #     nn.MaxPool2d(2, 2),
+        # )
+        # self.layer2 = nn.Sequential(
+        #     nn.Conv2d(8, 8, 2, 1),
+        #     nn.ELU(),
+        #     nn.MaxPool2d(2, 2),
+        # )
+        # self.layer3 = nn.Sequential(
+        #     nn.Conv2d(8, 8, 2, 1),
+        #     nn.ELU(),
+        #     nn.MaxPool2d(2, 2),
+        # )
+        # self.layer4 = nn.Sequential(
+        #     nn.Conv2d(8, 16, 2, 1),
+        #     nn.ELU(),
+        #     nn.MaxPool2d(2, 2),
+        # )
+        # self.layer5 = BatchFlatten()
+        # self.layer6 = nn.Sequential(
+        #     nn.Dropout(0.1),
+        #     nn.Linear(int(int((28 - 2 * 4) / (2 ** 4))** 2 * 16), 10),
+        # )
     def forward(self, x):
         for layers in self.layers:
             x = layers(x)
+        # print('0:', x.size())
+        # x = self.layer1(x)
+        # print('1:', x.size())
+        # x = self.layer2(x)
+        # print('2:', x.size())
+        # x = self.layer3(x)
+        # print('3:', x.size())
+        # x = self.layer4(x)
+        # print('4:', x.size())
+        # x = self.layer5(x)
+        # print('5:', x.size())
+        # x = self.layer6(x)
+        # print('6:', x.size())
         return x
 
 
@@ -227,15 +265,18 @@ def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag
     for fname in os.listdir(temp_dir):
         if fname.startswith(f'{flag1}.{flag2}'):
             os.remove(os.path.join(temp_dir, fname))
-
+    
+    # print('activations: ', len(activations), len(activations_name), activations_name)
     saved_activations_name = []
     # save new files
+    j = 0
     for i in range(len(activations)):
         if(activations[i].ndim == 3):
             random_select = random.randint(0, activations[i].shape[0] - 1)
             im = activations[i][random_select, :, :]
             # print("Saving " + os.path.join(temp_dir, flag1 + "_l" + str(i)) + ".png")
             plt.imsave(os.path.join(
-                temp_dir, f'{flag1}.{flag2}_{activations_name[i]}.png'), im)
-            saved_activations_name.append(activations_name[i])
+                temp_dir, f'{flag1}.{flag2}_{activations_name[i]}_{j}.png'), im)
+            saved_activations_name.append(f'{activations_name[i]}_{j}')
+            j += 1
     return saved_activations_name, prediction

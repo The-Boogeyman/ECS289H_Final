@@ -114,14 +114,14 @@
                   "
                   >RUN</v-btn
                 >
-                <v-spacer></v-spacer>
+                <!-- <v-spacer></v-spacer>
                 <v-btn
                   v-if="refresh === true"
                   color="primary"
                   text
                   @click="sync"
                   >SYNC</v-btn
-                >
+                > -->
               </v-list-item>
             </v-col>
           </v-row>
@@ -203,6 +203,7 @@ export default {
     TrainBatchSize: 256,
     lrStepGamma: 0.7,
     refresh: false,
+    finish: 0,
   }),
 
   methods: {
@@ -255,8 +256,13 @@ export default {
       this.lr1 = 0.001;
       this.lr2 = 0.001;
     },
-    sync: function() {
+    sync: function(timer) {
       this.$socket.send("refresh***");
+      setTimeout(() => {
+        if (this.finish === 1) {
+          clearInterval(timer)
+        }
+      }, 0)
     },
   },
 
@@ -265,6 +271,11 @@ export default {
       res = res.data;
       if (res.indexOf("start_training***") !== -1) {
         this.refresh = true;
+        let timer = setInterval(() => {
+          this.sync(timer)
+        }, 5000)
+      } else if (res.indexOf("train_finished***") !== -1) {
+        this.finish = 1
       }
     };
   },
