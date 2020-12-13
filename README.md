@@ -1,4 +1,5 @@
-# ECS289H_Final
+# Comparative Study of Convolutional Neural Networks
+## Final project of ECS 289H 002 Visual Analytics
 
 ## Project setup
 ```

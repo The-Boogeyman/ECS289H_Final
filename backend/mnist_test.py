@@ -110,8 +110,7 @@ def test(model, device, test_loader, test_loss_list, test_acc_list, epoch, flag)
 def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, drop_out_rate, init_lr, train_set, test_set, outputdir, flag):
     assert n_layers == len(
         output_sizes), f'n_layers ({n_layers}) is not equal to len(output_sizes) ({len(output_sizes)})'
-    # use_cuda = torch.cuda.is_available()
-    use_cuda = False
+    use_cuda = torch.cuda.is_available()
     print(flag, use_cuda, 'Start training')
     device = torch.device('cuda' if use_cuda else 'cpu')
     train_loader = torch.utils.data.DataLoader(
