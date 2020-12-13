@@ -1,25 +1,28 @@
 # Comparative Study of Convolutional Neural Networks
 ####      Final project of ECS 289H 002 Visual Analytics
 
-## Project setup
+#### Front End
+VUE CLI 4.5.9
+#### Back End
+Python 3.8.5
+#### Dependencies
+PyTorch 1.7.0
+websockets
+asyncio
+umap
+numpy
+threading
+
+
+### Project setup
 ```
 npm install
 ```
-
-### Compiles and hot-reloads for development
 ```
 npm run serve
 ```
-
-### Compiles and minifies for production
 ```
-npm run build
+cd backend/
 ```
-
-### Lints and fixes files
+python server.py
 ```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
