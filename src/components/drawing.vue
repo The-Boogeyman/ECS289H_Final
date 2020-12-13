@@ -2,7 +2,7 @@
   <v-container fluid>
     <p>
       Canvas
-      <v-icon @click="updateImg">mdi-refresh-circle</v-icon>
+      <v-icon @click="updateImg" @dblclick="clearCanvas">mdi-refresh-circle</v-icon>
       <v-icon v-if="showIcon === 1" @click="saveImg(canvas)"
         >mdi-send-circle</v-icon
       >
@@ -99,6 +99,9 @@ export default {
         this.ctx.fillRect(0, 0, 150, 150);
       }
     },
+    clearCanvas() {
+      this.ctx.fillRect(0, 0, 150, 150);
+    }
   },
 };
 </script>
