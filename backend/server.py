@@ -43,14 +43,10 @@ async def hello(websocket, path):
                 features2 = list(map(int, features2))
             else:
                 features2 = [int(features2)]
-            # print(n_layers1, features1, drop1, type(n_layers1), type(features1), type(drop1))
-            # print(n_layers2, features2, drop2, type(n_layers2), type(features2), type(drop2))
             outputdir, timestamp = make_outputdir()
             await websocket.send('start_training***')
             print(
                 f'Message received. Start training now. Results saved in {timestamp}')
-            # TODO
-            #  add function to stop training process based on user's selection
             t1 = Thread(target=mnist_main, args=(epochs, train_batch_size, lr_step_gamma, n_layers1,
                                                  features1, drop1, lr1, train_set, test_set, outputdir, 'model1'), daemon=True)
             t2 = Thread(target=mnist_main, args=(epochs, train_batch_size, lr_step_gamma, n_layers2,
@@ -120,7 +116,6 @@ async def hello(websocket, path):
             model2_path = os.path.join(
                 outputdir, 'model2', f'epoch.{selected_epoch}.pt.gz')
             temp_dir = os.path.join(os.getcwd(), 'temp')
-            # print('sample_data: ', type(sample_data), sample_data.shape)
             sample_data = np.load(os.path.join(temp_dir, 'org.npy'))
             model1_actname, prediction1 = get_activations(
                 model1_path, n_layers1, features1, drop1, sample_data, 'model1', 'org')
@@ -148,11 +143,8 @@ async def hello(websocket, path):
             annotated_img = rec_m.split('***')[1]
             prefix = "data:image/png;base64,"
             annotated_img = annotated_img[len(prefix):]
-            # print(len(annotated_img))
             if len(annotated_img) % 4 != 0:
-                # print(f'add {(4 - len(annotated_img) % 4)} =')
                 annotated_img += '=' * (4 - len(annotated_img) % 4)
-            # print(len(annotated_img))
             annotated_data = base64.b64decode(annotated_img)
             temp_dir = os.path.join(os.getcwd(), 'temp')
             annotated_path = os.path.join(temp_dir, 'annotated.png')

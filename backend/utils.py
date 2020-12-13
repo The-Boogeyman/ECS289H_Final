@@ -91,11 +91,6 @@ def get_dataset_from_np():
             data[data<t] = 0
             return data
         mnist, _, train, _, test, _ = get_total_dataset()
-        # mnist: concatenate train + test
-        # print(f'mnist total: {type(mnist)}, {type(mnist_target)}, {mnist.shape}, {mnist_target.shape}')
-        # print(f'train: {type(train)}, {type(train_target)}, {train.shape}, {train_target.shape}')
-        # print(f'test: {type(test)}, {type(test_target)}, {test.shape}, {test_target.shape}')
-        # print("Processing to binary images")
         np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_total_data_b.npy'), threshold(mnist))
         np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_train_data_b.npy'), threshold(train))
         np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_test_data_b.npy'), threshold(test))
