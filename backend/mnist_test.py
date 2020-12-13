@@ -30,7 +30,6 @@ class Model(nn.Module):
                 in_features = 1
             else:
                 in_features = output_sizes[i - 1]
-            # if i == n_layers - 1:
             if i == 0:
                 self.layers.extend([
                     nn.Conv2d(in_features, output_sizes[i], 2, 1),
@@ -46,59 +45,18 @@ class Model(nn.Module):
         if drop_out_rate > 0.:
             self.layers.extend([
                 nn.Dropout(drop_out_rate),
-                # nn.Linear(int(((28 - 2 * n_layers) / 2 )**2 * output_sizes[-1] * (1-drop_out_rate)), 10),
                 nn.Linear(int(((28 - 2 * n_layers) / 2)
                               ** 2 * output_sizes[-1]), 10),
-                # nn.Softmax(dim=1)
             ])
         else:
             self.layers.extend([
                 nn.Linear(int(((28 - 2 * n_layers) / 2)
                               ** 2 * output_sizes[-1]), 10),
-                # nn.Softmax(dim=1)
             ])
         self.layers = nn.ModuleList(self.layers)
-        # self.layer1 = nn.Sequential(
-        #     nn.Conv2d(1, 8, 2, 1),
-        #     nn.ELU(),
-        #     nn.MaxPool2d(2, 2),
-        # )
-        # self.layer2 = nn.Sequential(
-        #     nn.Conv2d(8, 8, 2, 1),
-        #     nn.ELU(),
-        #     nn.MaxPool2d(2, 2),
-        # )
-        # self.layer3 = nn.Sequential(
-        #     nn.Conv2d(8, 8, 2, 1),
-        #     nn.ELU(),
-        #     nn.MaxPool2d(2, 2),
-        # )
-        # self.layer4 = nn.Sequential(
-        #     nn.Conv2d(8, 16, 2, 1),
-        #     nn.ELU(),
-        #     nn.MaxPool2d(2, 2),
-        # )
-        # self.layer5 = BatchFlatten()
-        # self.layer6 = nn.Sequential(
-        #     nn.Dropout(0.1),
-        #     nn.Linear(int(int((28 - 2 * 4) / (2 ** 4))** 2 * 16), 10),
-        # )
     def forward(self, x):
         for layers in self.layers:
             x = layers(x)
-        # print('0:', x.size())
-        # x = self.layer1(x)
-        # print('1:', x.size())
-        # x = self.layer2(x)
-        # print('2:', x.size())
-        # x = self.layer3(x)
-        # print('3:', x.size())
-        # x = self.layer4(x)
-        # print('4:', x.size())
-        # x = self.layer5(x)
-        # print('5:', x.size())
-        # x = self.layer6(x)
-        # print('6:', x.size())
         return x
 
 
@@ -107,7 +65,6 @@ def train(model, device, train_loader, optimizer, train_loss_list, train_acc_lis
     correct = 0
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
-        # print(data.size(), target.size())
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
@@ -153,7 +110,8 @@ def test(model, device, test_loader, test_loss_list, test_acc_list, epoch, flag)
 def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, drop_out_rate, init_lr, train_set, test_set, outputdir, flag):
     assert n_layers == len(
         output_sizes), f'n_layers ({n_layers}) is not equal to len(output_sizes) ({len(output_sizes)})'
-    use_cuda = torch.cuda.is_available()
+    # use_cuda = torch.cuda.is_available()
+    use_cuda = False
     print(flag, use_cuda, 'Start training')
     device = torch.device('cuda' if use_cuda else 'cpu')
     train_loader = torch.utils.data.DataLoader(
@@ -217,7 +175,7 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
         epoch_time = time.perf_counter() - epoch_start
         print(f'{flag}: Epoch: {epoch}, Time: {epoch_time}s')
 
-        # # Below indicates how to load a trained model
+        # # Below indicates how to load a saved model's statedict
         # model_path = os.path.join(out_path, 'model.statedict.pt.gz')
         # with gzip.open(model_path, 'rb') as f:
         #     model.load_state_dict(torch.load(f))
@@ -225,19 +183,14 @@ def mnist_main(epochs, train_batch_size, lr_step_gamma, n_layers, output_sizes, 
 
 
 def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag1, flag2):
-    # print(f'Start generating activations for {flag1}')
-    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # copy_model = Model(n_layers=n_layers, output_sizes=features, drop_out_rate=drop).to(device)
     copy_model = Model(n_layers=n_layers,
                        output_sizes=features, drop_out_rate=drop)
     with gzip.open(copy_model_path, 'rb') as copy_f:
         copy_model = torch.load(copy_f).to('cpu')
-        # copy_model.to(device)
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ])
-    # sample_tensor = transform(sample_data).to(device)
     sample_tensor = transform(sample_data)
     sample_tensor = sample_tensor.unsqueeze(0)
 
@@ -245,8 +198,6 @@ def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag
     activations_name = []
 
     def hook(self, input, output):
-        # print('Inside ' + self.__class__.__name__ + ' forward')
-        # activations.append(output.detach().squeeze().cpu().numpy())
         activations.append(output.detach().squeeze().numpy())
         activations_name.append(self.__class__.__name__)
 
@@ -254,10 +205,7 @@ def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag
         la.register_forward_hook(hook)
 
     sample_output = copy_model(sample_tensor)
-    # print(f'{flag1}, sample_output: {sample_output}')
     prediction = int(sample_output.argmax(dim=1, keepdim=True))
-    # for a in activations:
-    #     print(flag1, a.shape, type(a))
 
     temp_dir = os.path.join(os.getcwd(), 'temp')
 
@@ -266,7 +214,6 @@ def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag
         if fname.startswith(f'{flag1}.{flag2}'):
             os.remove(os.path.join(temp_dir, fname))
     
-    # print('activations: ', len(activations), len(activations_name), activations_name)
     saved_activations_name = []
     # save new files
     j = 0
@@ -274,7 +221,6 @@ def get_activations(copy_model_path, n_layers, features, drop, sample_data, flag
         if(activations[i].ndim == 3):
             random_select = random.randint(0, activations[i].shape[0] - 1)
             im = activations[i][random_select, :, :]
-            # print("Saving " + os.path.join(temp_dir, flag1 + "_l" + str(i)) + ".png")
             plt.imsave(os.path.join(
                 temp_dir, f'{flag1}.{flag2}_{activations_name[i]}_{j}.png'), im)
             saved_activations_name.append(f'{activations_name[i]}_{j}')

@@ -64,8 +64,6 @@ def get_total_dataset():
         mnist = np.concatenate((train_set_np, test_set_np), axis=0)
         mnist_target = np.concatenate(
             (train_set_target_np, test_set_target_np), axis=0)
-        # print(type(mnist), type(mnist_target))
-        # print(mnist.shape, mnist_target.shape)
         np.save(os.path.join(os.path.dirname(os.path.dirname(
             os.getcwd())), 'data', 'mnist_total_data.npy'), mnist)
         np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())),
@@ -83,7 +81,6 @@ def get_total_dataset():
         # print(np.min(mnist[0]), np.max(mnist[0]))
         # new_im = Image.fromarray(mnist[0])
         # new_im.save('example.png')
-    # print(mnist.shape, train_set_np.shape, test_set_np.shape)
     return mnist, mnist_target, train_set_np, train_set_target_np, test_set_np, test_set_target_np
 
 

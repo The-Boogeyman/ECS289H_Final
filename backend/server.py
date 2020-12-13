@@ -190,8 +190,6 @@ async def hello(websocket, path):
             print(
                 f'Model2 annotated activation sent. Prediction: {prediction2}. Epoch: {selected_epoch}')
 
-# start_server = websockets.serve(hello, "192.168.1.98", 6060)
-# start_server = websockets.serve(hello, "192.168.1.3", 6060)
 start_server = websockets.serve(hello, "localhost", 6060)
 
 
