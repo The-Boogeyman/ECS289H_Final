@@ -1,20 +1,26 @@
 # Comparative Study of Convolutional Neural Networks
 ####      Final project of ECS 289H 002 Visual Analytics
 
+## Dependencies
 #### Front End
 VUE CLI 4.5.9
 #### Back End
 Python 3.8.5
-#### Dependencies
+#### Packages
 PyTorch 1.7.0
+
 websockets
+
 asyncio
+
 umap
+
 numpy
+
 threading
 
 
-### Project setup
+## Project setup
 ```
 npm install
 ```
