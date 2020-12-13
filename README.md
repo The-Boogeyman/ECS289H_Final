@@ -30,5 +30,6 @@ npm run serve
 ```
 cd backend/
 ```
+```
 python server.py
 ```
