@@ -42,19 +42,19 @@ def get_data():
 
 
 def get_total_dataset():
-    if os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_total_data.npy')):
+    if os.path.exists(os.path.join(os.path.dirname(os.getcwd()), 'data', 'mnist_total_data.npy')):
         mnist = np.load(os.path.join(os.path.dirname(
-            os.path.dirname(os.getcwd())), 'data', 'mnist_total_data.npy'))
+            os.getcwd()), 'data', 'mnist_total_data.npy'))
         mnist_target = np.load(os.path.join(os.path.dirname(
-            os.path.dirname(os.getcwd())), 'data', 'mnist_total_target.npy'))
+            os.getcwd()), 'data', 'mnist_total_target.npy'))
         train_set_np = np.load(os.path.join(os.path.dirname(
-            os.path.dirname(os.getcwd())), 'data', 'mnist_train_data.npy'))
+            os.getcwd()), 'data', 'mnist_train_data.npy'))
         train_set_target_np = np.load(os.path.join(os.path.dirname(
-            os.path.dirname(os.getcwd())), 'data', 'mnist_train_target.npy'))
+            os.getcwd()), 'data', 'mnist_train_target.npy'))
         test_set_np = np.load(os.path.join(os.path.dirname(
-            os.path.dirname(os.getcwd())), 'data', 'mnist_test_data.npy'))
+            os.getcwd()), 'data', 'mnist_test_data.npy'))
         test_set_target_np = np.load(os.path.join(os.path.dirname(
-            os.path.dirname(os.getcwd())), 'data', 'mnist_test_target.npy'))
+            os.getcwd()), 'data', 'mnist_test_target.npy'))
     else:
         train_set, test_set = get_data()
         train_set_np = train_set.data.numpy()
@@ -64,18 +64,18 @@ def get_total_dataset():
         mnist = np.concatenate((train_set_np, test_set_np), axis=0)
         mnist_target = np.concatenate(
             (train_set_target_np, test_set_target_np), axis=0)
-        np.save(os.path.join(os.path.dirname(os.path.dirname(
-            os.getcwd())), 'data', 'mnist_total_data.npy'), mnist)
-        np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())),
+        np.save(os.path.join(os.path.dirname(os.getcwd()),
+                             'data', 'mnist_total_data.npy'), mnist)
+        np.save(os.path.join(os.path.dirname(os.getcwd()),
                              'data', 'mnist_total_target.npy'), mnist_target)
-        np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())),
+        np.save(os.path.join(os.path.dirname(os.getcwd()),
                              'data', 'mnist_train_data.npy'), train_set_np)
-        np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())),
-                             'data', 'mnist_train_target.npy'), train_set_target_np)
-        np.save(os.path.join(os.path.dirname(os.path.dirname(
-            os.getcwd())), 'data', 'mnist_test_data.npy'), test_set_np)
-        np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())),
-                             'data', 'mnist_test_target.npy'), test_set_target_np)
+        np.save(os.path.join(os.path.dirname(os.getcwd()), 'data',
+                             'mnist_train_target.npy'), train_set_target_np)
+        np.save(os.path.join(os.path.dirname(os.getcwd()),
+                             'data', 'mnist_test_data.npy'), test_set_np)
+        np.save(os.path.join(os.path.dirname(os.getcwd()), 'data',
+                             'mnist_test_target.npy'), test_set_target_np)
         # example of how to load one image (with index 0-69999)
         # print(mnist[0].shape, mnist_target[0])
         # print(np.min(mnist[0]), np.max(mnist[0]))
@@ -85,26 +85,30 @@ def get_total_dataset():
 
 
 def get_dataset_from_np():
-    if not os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_train_data_b.npy')):
-        def threshold(data, t = 15):
-            data[data>=t] = 255
-            data[data<t] = 0
+    if not os.path.exists(os.path.join(os.path.dirname(os.getcwd()), 'data', 'mnist_train_data_b.npy')):
+        def threshold(data, t=15):
+            data[data >= t] = 255
+            data[data < t] = 0
             return data
         mnist, _, train, _, test, _ = get_total_dataset()
-        np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_total_data_b.npy'), threshold(mnist))
-        np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_train_data_b.npy'), threshold(train))
-        np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_test_data_b.npy'), threshold(test))
+        np.save(os.path.join(os.path.dirname(os.getcwd()), 'data',
+                             'mnist_total_data_b.npy'), threshold(mnist))
+        np.save(os.path.join(os.path.dirname(os.getcwd()), 'data',
+                             'mnist_train_data_b.npy'), threshold(train))
+        np.save(os.path.join(os.path.dirname(os.getcwd()),
+                             'data', 'mnist_test_data_b.npy'), threshold(test))
     train = np.load(os.path.join(os.path.dirname(
-        os.path.dirname(os.getcwd())), 'data', 'mnist_train_data_b.npy'))
+        os.getcwd()), 'data', 'mnist_train_data_b.npy'))
     train_target = np.load(os.path.join(os.path.dirname(
-        os.path.dirname(os.getcwd())), 'data', 'mnist_train_target.npy'))
+        os.getcwd()), 'data', 'mnist_train_target.npy'))
     test = np.load(os.path.join(os.path.dirname(
-        os.path.dirname(os.getcwd())), 'data', 'mnist_test_data_b.npy'))
+        os.getcwd()), 'data', 'mnist_test_data_b.npy'))
     test_target = np.load(os.path.join(os.path.dirname(
-        os.path.dirname(os.getcwd())), 'data', 'mnist_test_target.npy'))
+        os.getcwd()), 'data', 'mnist_test_target.npy'))
     train_set = mnistDataset(train, train_target)
     test_set = mnistDataset(test, test_target)
     return train_set, test_set
+
 
 def make_outputdir(postfix=''):
     if postfix is None:
@@ -117,20 +121,20 @@ def make_outputdir(postfix=''):
 
 
 def dim_reduction():
-    if os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'data', 'mnist_test_coord.npy')):
+    if os.path.exists(os.path.join(os.path.dirname(os.getcwd()), 'data', 'mnist_test_coord.npy')):
         embedding_total = np.load(os.path.join(os.path.dirname(
-            os.path.dirname(os.getcwd())), 'data', 'mnist_total_coord.npy'))
+            os.getcwd()), 'data', 'mnist_total_coord.npy'))
         embedding_train = np.load(os.path.join(os.path.dirname(
-            os.path.dirname(os.getcwd())), 'data', 'mnist_train_coord.npy'))
+            os.getcwd()), 'data', 'mnist_train_coord.npy'))
         embedding_test = np.load(os.path.join(os.path.dirname(
-            os.path.dirname(os.getcwd())), 'data', 'mnist_test_coord.npy'))
+            os.getcwd()), 'data', 'mnist_test_coord.npy'))
     else:
         mnist, mnist_target, train, train_target, test, test_target = get_total_dataset()
 
         mnist.resize((70000, 784))
         embedding_total = umap.UMAP(
             n_neighbors=30, min_dist=1.0, n_components=2, random_state=27).fit_transform(mnist)
-        np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())),
+        np.save(os.path.join(os.path.dirname(os.getcwd()),
                              'data', 'mnist_total_coord.npy'), embedding_total)
         sns.set(style='white', rc={'figure.figsize': (10, 8)})
         plt.figure()
@@ -141,24 +145,26 @@ def dim_reduction():
         train.resize((60000, 784))
         embedding_train = umap.UMAP(
             n_neighbors=30, min_dist=1.0, n_components=2, random_state=27).fit_transform(train)
-        np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())),
+        np.save(os.path.join(os.path.dirname(os.getcwd()),
                              'data', 'mnist_train_coord.npy'), embedding_train)
         sns.set(style='white', rc={'figure.figsize': (10, 8)})
         plt.figure()
         plt.scatter(embedding_train[:, 0], embedding_train[:, 1], c=train_target.astype(
             int), s=0.1, cmap='Spectral')
-        plt.savefig('scatter_train.png', bbox_inches='tight')
+        plt.savefig(os.path.join(os.getcwd(), 'temp',
+                                 'scatter_train.png'), bbox_inches='tight')
 
         test.resize((10000, 784))
         embedding_test = umap.UMAP(
             n_neighbors=30, min_dist=1.0, n_components=2, random_state=27).fit_transform(test)
-        np.save(os.path.join(os.path.dirname(os.path.dirname(os.getcwd())),
+        np.save(os.path.join(os.path.dirname(os.getcwd()),
                              'data', 'mnist_test_coord.npy'), embedding_test)
         sns.set(style='white', rc={'figure.figsize': (10, 8)})
         plt.figure()
         plt.scatter(embedding_test[:, 0], embedding_test[:, 1], c=test_target.astype(
             int), s=0.1, cmap='Spectral')
-        plt.savefig('scatter_test.png', bbox_inches='tight')
+        plt.savefig(os.path.join(os.getcwd(), 'temp',
+                                 'scatter_test.png'), bbox_inches='tight')
     return embedding_total, embedding_train, embedding_test
 
 

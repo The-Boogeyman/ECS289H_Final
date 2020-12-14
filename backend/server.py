@@ -88,10 +88,8 @@ async def hello(websocket, path):
             print('request image: ', Index)
             temp_dir = os.path.join(os.getcwd(), 'temp')
             os.makedirs(temp_dir, exist_ok=True)
-            test_set_np = np.load(os.path.join(os.path.dirname(
-                os.path.dirname(os.getcwd())), 'data', 'mnist_test_data_b.npy'))
-            test_set_target_np = np.load(os.path.join(os.path.dirname(
-                os.path.dirname(os.getcwd())), 'data', 'mnist_test_target.npy'))
+            test_set_np = np.load(os.path.join(os.path.dirname(os.getcwd()), 'data', 'mnist_test_data_b.npy'))
+            test_set_target_np = np.load(os.path.join(os.path.dirname(os.getcwd()), 'data', 'mnist_test_target.npy'))
             sample_data = test_set_np[Index]
             np.save(os.path.join(temp_dir, 'org.npy'), sample_data)
             sample_label = test_set_target_np[Index]

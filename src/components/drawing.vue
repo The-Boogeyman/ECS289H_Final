@@ -2,7 +2,8 @@
   <v-container fluid>
     <p>
       Canvas
-      <v-icon @click="updateImg" @dblclick="clearCanvas">mdi-refresh-circle</v-icon>
+      <v-icon @click="updateImg">mdi-refresh-circle</v-icon>
+      <v-icon @click="clearCanvas">mdi-alpha-c-circle</v-icon>
       <v-icon v-if="showIcon === 1" @click="saveImg(canvas)"
         >mdi-send-circle</v-icon
       >
@@ -58,19 +59,19 @@ export default {
   methods: {
     startPainting(e) {
       this.painting = true;
-      console.log(this.painting);
+      // console.log(this.painting);
       this.draw(e);
     },
     finishedPainting() {
       this.painting = false;
-      console.log(this.painting);
+      // console.log(this.painting);
       this.ctx.beginPath();
     },
     draw(e) {
       if (!this.painting) return;
       this.rect = this.canvas.getBoundingClientRect();
-      console.log("Mouse at " + e.clientX + ", " + e.clientY);
-      console.log("Origin " + this.rect.left + ", " + this.rect.right);
+      // console.log("Mouse at " + e.clientX + ", " + e.clientY);
+      // console.log("Origin " + this.rect.left + ", " + this.rect.right);
       this.ctx.lineWidth = 10;
       this.ctx.lineCap = "round";
       var x = e.clientX - this.rect.left;
@@ -84,7 +85,7 @@ export default {
       //console.log("Box")
     },
     saveImg(e) {
-      console.log(e.toDataURL());
+      // console.log(e.toDataURL());
       this.$socket.send("request_annotated_activations***" + e.toDataURL());
     },
     updateImg() {
@@ -92,7 +93,7 @@ export default {
         var img = new Image();
         img.src = this.OrgImg;
         img.onload = () => {
-          console.log("this.ctx:", this.ctx);
+          // console.log("this.ctx:", this.ctx);
           this.ctx.drawImage(img, 0, 0, 150, 150);
         };
       } else {
